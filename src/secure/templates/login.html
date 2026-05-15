@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block title %}Secure8TechBank{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-layout {
+    min-height: calc(92vh - var(--nav-h));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+
+  /*  LEFT BRAND PANEL  */
+  .auth-left {
+    padding: 4rem 3.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid var(--border-1);
+  }
+
+  .auth-left::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .auth-left::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -40px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(46,204,143,0.04) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .auth-left-logo {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 600;
+    color: var(--ink-05);
+  }
+
+  .auth-left-logo-mark {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #000;
+    font-family: var(--font-body);
+  }
+
+  .auth-left-center { position: relative; z-index: 1; }
+
+  .auth-left-eyebrow {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .auth-left-eyebrow-line {
+    width: 28px; height: 1px; background: var(--gold); opacity: 0.7;
+  }
+
+  .auth-left-eyebrow-text {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .auth-left-quote {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+    font-weight: 600; line-height: 1.15;
+    letter-spacing: -0.02em; color: var(--ink-05);
+    margin-bottom: 1rem;
+  }
+
+  .auth-left-quote em { font-style: italic; color: var(--gold); }
+
+  .auth-left-sub {
+    font-size: 13px; color: var(--ink-30); line-height: 1.65;
+    margin-bottom: 2.5rem;
+  }
+
+  .auth-feature-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .auth-feature {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; color: var(--ink-20);
+  }
+
+  .auth-feature-icon {
+    width: 32px; height: 32px;
+    background: var(--gold-dim);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+
+  .auth-left-footer { position: relative; z-index: 1; }
+  .auth-left-footer-text { font-size: 11px; color: var(--ink-40); }
+
+  /*  RIGHT FORM PANEL  */
+  .auth-right {
+    padding: 4rem 3.5rem;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-1);
+  }
+
+  .auth-right-inner { width: 100%; max-width: 380px; }
+
+  .auth-right-eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .auth-right-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem; font-weight: 600;
+    color: var(--ink-05); letter-spacing: -0.02em;
+    line-height: 1.1; margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .auth-right-sub {
+    font-size: 13px; color: var(--ink-30); margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  /* Input icon wrapper */
+  .input-icon-wrap { position: relative; }
+  .input-icon-wrap input { padding-left: 44px !important; }
+  .input-icon-prefix {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-40); pointer-events: none;
+    display: flex; align-items: center;
+  }
+
+  /* Divider */
+  .auth-divider {
+    display: flex; align-items: center; gap: 12px; margin: 1.5rem 0;
+  }
+  .auth-divider-line { flex: 1; height: 1px; background: var(--border-1); }
+  .auth-divider-text { font-size: 11px; color: var(--ink-40); font-weight: 500; letter-spacing: 0.06em; }
+
+  .auth-link-row {
+    text-align: center; margin-top: 1.5rem;
+    font-size: 13px; color: var(--ink-30);
+  }
+  .auth-link-row a {
+    color: var(--gold); text-decoration: none; font-weight: 600;
+    transition: color 0.15s;
+  }
+  .auth-link-row a:hover { color: var(--gold-lt); }
+
+  @media (max-width: 820px) {
+    .auth-layout { grid-template-columns: 1fr; }
+    .auth-left { display: none; }
+    .auth-right { padding: 3rem 1.75rem; min-height: calc(90vh - var(--nav-h)); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+
+  <!-- LEFT: Brand -->
+  <div class="auth-left fade-up">
+    <div class="auth-left-logo">
+      <div class="auth-left-logo-mark">8T</div>
+      8TechBank
+    </div>
+
+    <div class="auth-left-center">
+      <div class="auth-left-eyebrow">
+        <div class="auth-left-eyebrow-line"></div>
+        <span class="auth-left-eyebrow-text">Private Banking</span>
+      </div>
+      <div class="auth-left-quote">
+        "Where capital meets <em>clarity</em>."
+      </div>
+      <p class="auth-left-sub">Private banking for the discerning digital era. Precision-built for those who demand more.</p>
+      <div class="auth-feature-list">
+        <div class="auth-feature">
+          <div class="auth-feature-icon">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          Instant transfers, zero delays
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          Complete transaction history
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          Secure account management
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-left-footer">
+      <div class="auth-left-footer-text">© {{ now.year }} 8TechBank · Demo Platform</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Form -->
+  <div class="auth-right">
+    <div class="auth-right-inner fade-up delay-1">
+      <div class="auth-right-eyebrow">Welcome Back</div>
+      <h1 class="auth-right-title">Sign in to your account</h1>
+      <p class="auth-right-sub">Enter your credentials to continue.</p>
+
+      {% if insecure_app %}
+        <div class="insecure-banner">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;color:#f07070"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          <span><strong>Insecure mode:</strong> Intentionally vulnerable for testing. Use dummy credentials only.</span>
+        </div>
+      {% endif %}
+
+      {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/login">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon-prefix">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </span>
+            <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username" maxlength="64" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon-prefix">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </span>
+            <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" minlength="8" maxlength="128" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.75rem;padding:14px;font-size:14px;">
+          Sign In
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <div class="auth-divider-line"></div>
+        <span class="auth-divider-text">New here?</span>
+        <div class="auth-divider-line"></div>
+      </div>
+
+      <a href="/register" class="btn btn-ghost btn-full" style="font-size:13px;">Open a Free Account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

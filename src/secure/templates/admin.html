@@ -1,0 +1,559 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel — 8TechBank{% endblock %}
+
+{% block extra_head %}
+<style>
+  /*  ADMIN HEADER  */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--amber-dim);
+    color: var(--amber);
+    border: 1px solid rgba(232,156,63,0.28);
+    padding: 4px 12px;
+    border-radius: var(--r-pill);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /*  STATS STRIP  */
+  .stats-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: 1.75rem 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .stat-card:hover {
+    border-color: var(--border-gold);
+    transform: translateY(-2px);
+  }
+
+  /*  TABS  */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-lg);
+    padding: 5px;
+    width: fit-content;
+  }
+
+  .tab-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: var(--r-md);
+    border: none;
+    background: transparent;
+    color: var(--ink-30);
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: var(--font-body);
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-btn:hover { color: var(--ink-05); background: var(--surface-2); }
+  .tab-btn.active { background: var(--gold); color: #000; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /*  SECTION HEADER  */
+  .users-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .users-section-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink-05);
+    letter-spacing: 0.01em;
+  }
+
+  .users-count {
+    font-size: 12px;
+    color: var(--ink-30);
+    font-family: var(--font-mono);
+  }
+
+  /*  USERS GRID  */
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+
+  .user-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-lg);
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .user-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+  .user-card.frozen { border-color: rgba(224,82,82,0.28); background: rgba(224,82,82,0.03); }
+
+  .user-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    border: 1px solid var(--border-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .user-avatar.frozen-avatar {
+    background: var(--danger-dim);
+    border-color: rgba(224,82,82,0.30);
+    color: var(--danger);
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+
+  .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-05);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 3px;
+  }
+
+  .user-meta {
+    font-size: 11px;
+    color: var(--ink-40);
+    font-family: var(--font-mono);
+  }
+
+  .user-balance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--border-0);
+    border-bottom: 1px solid var(--border-0);
+    margin-bottom: 0.875rem;
+  }
+
+  .user-balance-label {
+    font-size: 11px;
+    color: var(--ink-40);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .user-balance-val {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--success);
+    letter-spacing: -0.02em;
+  }
+
+  /*  RESET BALANCE FORM  */
+  .reset-form {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .reset-form input {
+    flex: 1;
+    padding: 7px 10px !important;
+    font-size: 13px !important;
+    border-radius: var(--r-sm) !important;
+  }
+
+  /*  MINI BUTTONS  */
+  .btn-xs {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: var(--r-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .btn-xs-gold    { background: var(--gold-dim);    color: var(--gold);    border-color: var(--border-gold); }
+  .btn-xs-gold:hover { background: var(--gold); color: #000; }
+
+  .btn-xs-ghost   { background: transparent;        color: var(--ink-20);  border-color: var(--border-1); }
+  .btn-xs-ghost:hover { background: var(--surface-2); color: var(--ink-05); }
+
+  .btn-xs-danger  { background: var(--danger-dim);  color: var(--danger);  border-color: rgba(224,82,82,0.22); }
+  .btn-xs-danger:hover { background: rgba(224,82,82,0.22); }
+
+  .btn-xs-success { background: var(--success-dim); color: var(--success); border-color: rgba(46,204,143,0.22); }
+  .btn-xs-success:hover { background: rgba(46,204,143,0.22); }
+
+  .btn-xs-amber   { background: var(--amber-dim);   color: var(--amber);   border-color: rgba(232,156,63,0.22); }
+  .btn-xs-amber:hover { background: rgba(232,156,63,0.22); }
+
+  .user-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /*  TRANSACTIONS TABLE  */
+  .tx-table-wrap {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    border: 1px solid var(--border-1);
+  }
+
+  .tx-table { width: 100%; border-collapse: collapse; }
+
+  .tx-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--ink-30);
+    padding: 12px 16px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border-1);
+  }
+
+  .tx-table td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--ink-10);
+    border-bottom: 1px solid var(--border-0);
+    background: var(--surface-1);
+  }
+
+  .tx-table tr:last-child td { border-bottom: none; }
+  .tx-table tr:hover td { background: var(--surface-2); }
+
+  .tx-amount-cell {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--success);
+  }
+
+  .tx-note-cell {
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--ink-30);
+    font-size: 12px;
+  }
+
+  .tx-time-cell {
+    font-size: 11px;
+    color: var(--ink-40);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+
+  /*  EMPTY STATE  */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--ink-40);
+    font-size: 13px;
+  }
+
+  .empty-icon {
+    width: 48px; height: 48px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--r-lg);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    color: var(--ink-40);
+  }
+
+  /*  RESPONSIVE  */
+  @media (max-width: 900px) {
+    .stats-overview { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .stats-overview { grid-template-columns: 1fr; }
+    .users-grid { grid-template-columns: 1fr; }
+    .tab-bar { width: 100%; flex-wrap: wrap; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="fade-up">
+  <div class="admin-header">
+    <h1 class="page-title" style="margin-bottom:0;">Admin Panel</h1>
+    <span class="admin-badge">
+      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      Restricted
+    </span>
+  </div>
+  <p class="page-subtitle">System-wide control over all accounts, balances, and transactions</p>
+</div>
+
+<!-- STATS -->
+<div class="stats-overview fade-up delay-1">
+  <div class="card card-sm stat-card">
+    <div class="stat-label">Total Users</div>
+    <div class="stat-value gold">{{ users|length }}</div>
+  </div>
+  <div class="card card-sm stat-card">
+    <div class="stat-label">Total Balance</div>
+    <div class="stat-value green">${{ "%.2f"|format(total_balance) }}</div>
+  </div>
+  <div class="card card-sm stat-card">
+    <div class="stat-label">Transactions</div>
+    <div class="stat-value">{{ transactions|length }}</div>
+  </div>
+  <div class="card card-sm stat-card">
+    <div class="stat-label">Frozen Accounts</div>
+    <div class="stat-value" style="color:var(--danger);">{{ users|selectattr('4', 'equalto', 1)|list|length }}</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar fade-up delay-2">
+  <button class="tab-btn active" onclick="switchTab('users', this)">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    Users
+  </button>
+  <button class="tab-btn" onclick="switchTab('transactions', this)">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    Transactions
+  </button>
+</div>
+
+<!--  TAB: USERS  -->
+<div id="tab-users" class="tab-panel active fade-up delay-3">
+  <div class="users-section-header">
+    <span class="users-section-title">All Accounts</span>
+    <span class="users-count">{{ users|length }} total</span>
+  </div>
+
+  <div class="users-grid">
+    {% for u in users %}
+    {# u = (id, username, balance, is_admin, is_frozen) #}
+    <div class="user-card {{ 'frozen' if u[4] else '' }}">
+
+      <!-- TOP ROW -->
+      <div class="user-card-top">
+        <div class="user-avatar {{ 'frozen-avatar' if u[4] else '' }}">
+          {{ u[1][0].upper() }}
+        </div>
+        <div class="user-info">
+          <div class="user-name">
+            {# SECURE: {{ u[1] }} auto-escaped by Jinja2 #}
+            {{ u[1] }}
+            {% if u[0] == session.get('user_id') %}
+              <span class="badge badge-gold" style="font-size:9px;">You</span>
+            {% endif %}
+            {% if u[3] %}
+              <span class="badge badge-amber" style="font-size:9px;">Admin</span>
+            {% endif %}
+            {% if u[4] %}
+              <span class="badge badge-red" style="font-size:9px;">Frozen</span>
+            {% endif %}
+          </div>
+          <div class="user-meta">Account #{{ u[0] }}</div>
+        </div>
+      </div>
+
+      <!-- BALANCE -->
+      <div class="user-balance-row">
+        <span class="user-balance-label">Balance</span>
+        <span class="user-balance-val">${{ "%.2f"|format(u[2]) }}</span>
+      </div>
+
+      <!-- RESET BALANCE FORM — CSRF protected -->
+      <form method="POST" action="/admin/reset_balance/{{ u[0] }}" class="reset-form">
+        {# SECURE: CSRF token always present, unconditionally #}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="number" name="amount" placeholder="New balance" step="0.01" min="0" value="{{ "%.2f"|format(u[2]) }}">
+        <button type="submit" class="btn-xs btn-xs-ghost">
+          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Reset
+        </button>
+      </form>
+
+      <!-- ACTIONS -->
+      <div class="user-actions">
+
+        <!-- Promote / Demote — CSRF protected -->
+        {% if u[3] %}
+          <form method="POST" action="/admin/demote/{{ u[0] }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-xs btn-xs-amber">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              Demote
+            </button>
+          </form>
+        {% else %}
+          <form method="POST" action="/admin/promote/{{ u[0] }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-xs btn-xs-gold">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+              Promote
+            </button>
+          </form>
+        {% endif %}
+
+        <!-- Freeze / Unfreeze — CSRF protected -->
+        {% if u[4] %}
+          <form method="POST" action="/admin/unfreeze/{{ u[0] }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-xs btn-xs-success">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+              Unfreeze
+            </button>
+          </form>
+        {% else %}
+          <form method="POST" action="/admin/freeze/{{ u[0] }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-xs btn-xs-ghost">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              Freeze
+            </button>
+          </form>
+        {% endif %}
+
+        <!-- Delete — not self, CSRF protected -->
+        {% if u[0] != session.get('user_id') %}
+          {# SECURE: username stored in data attribute (auto-escaped), read via JS dataset
+             Prevents XSS via crafted username breaking out of confirm() string #}
+          <form method="POST" action="/admin/delete/{{ u[0] }}"
+                data-username="{{ u[1] }}"
+                onsubmit="return confirm('Delete ' + this.dataset.username + '? This cannot be undone.')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-xs btn-xs-danger">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Delete
+            </button>
+          </form>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!--  TAB: TRANSACTIONS  -->
+<div id="tab-transactions" class="tab-panel fade-up delay-3">
+  <div class="users-section-header">
+    <span class="users-section-title">All Transactions</span>
+    <span class="users-count">{{ transactions|length }} records</span>
+  </div>
+
+  {% if transactions %}
+  <div class="tx-table-wrap">
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Amount</th>
+          <th>Note</th>
+          <th>Time</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--ink-40);">{{ t[0] }}</td>
+          <td><span style="font-size:13px;color:var(--ink-05);">{{ t[1] }}</span></td>
+          <td><span style="font-size:13px;color:var(--ink-05);">{{ t[2] }}</span></td>
+          <td class="tx-amount-cell">${{ "%.2f"|format(t[3]) }}</td>
+          {# SECURE: {{ t[4] }} without | safe — Jinja2 auto-escapes HTML in notes #}
+          <td class="tx-note-cell" title="{{ t[4] }}">{{ t[4] if t[4] else '—' }}</td>
+          <td class="tx-time-cell">{{ t[5] if t[5] else '—' }}</td>
+          <td>
+            {# SECURE: CSRF token on delete transaction form #}
+            <form method="POST" action="/admin/delete_transaction/{{ t[0] }}"
+                  onsubmit="return confirm('Delete this transaction?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-xs btn-xs-danger">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      </div>
+      No transactions on record yet.
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+{% endblock %}

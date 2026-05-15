@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Account {{ id }}Secure8TechBank{% endblock %}
+
+{% block extra_head %}
+<style>
+  /*  PROFILE CARD  */
+  .profile-card {
+    background: linear-gradient(145deg, var(--surface-2) 0%, var(--surface-1) 100%);
+    border: 1px solid var(--border-1); border-radius: var(--r-xl);
+    padding: 2.25rem 2.5rem;
+    position: relative; overflow: hidden;
+  }
+  .profile-card::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, var(--gold-dim) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .profile-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+  }
+
+  .profile-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 1.5rem;
+    flex-wrap: wrap; margin-bottom: 2rem;
+  }
+
+  .profile-avatar-row { display: flex; align-items: center; gap: 1.25rem; }
+
+  .profile-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 1.75rem;
+    font-weight: 700; color: #000;
+    border: 2px solid rgba(201,168,76,0.35);
+    box-shadow: 0 0 0 6px var(--gold-glow);
+    flex-shrink: 0;
+  }
+
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: 1.6rem; font-weight: 600; color: #fff;
+    letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 4px;
+  }
+  .profile-handle { font-size: 12px; color: var(--ink-30); font-family: var(--font-mono); }
+
+  .profile-status {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--success-dim);
+    border: 1px solid rgba(46,204,143,0.22);
+    border-radius: var(--r-pill); padding: 6px 14px;
+    font-size: 11px; font-weight: 600; color: var(--success); letter-spacing: 0.04em;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    animation: pulse-dot 2s ease infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /*  STATS GRID  */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border-0);
+    border-radius: var(--r-lg); overflow: hidden;
+  }
+  .stat-cell {
+    background: var(--surface-2); padding: 1.25rem 1.5rem;
+  }
+  .stat-cell:first-child { border-radius: var(--r-lg) 0 0 var(--r-lg); }
+  .stat-cell:last-child  { border-radius: 0 var(--r-lg) var(--r-lg) 0; }
+  .stat-cell-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-30); margin-bottom: 8px;
+  }
+  .stat-cell-value {
+    font-family: var(--font-display);
+    font-size: 1.55rem; font-weight: 600; color: var(--ink-05);
+    letter-spacing: -0.02em; line-height: 1.1;
+  }
+  .stat-cell-value.gold  { color: var(--gold); }
+  .stat-cell-value.green { color: var(--success); }
+
+  /*  DETAIL LIST  */
+  .detail-row {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0; border-bottom: 1px solid var(--border-0); gap: 1rem;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink-30); flex-shrink: 0;
+  }
+  .detail-val { font-size: 14px; color: var(--ink-05); font-family: var(--font-mono); text-align: right; }
+
+  .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2rem; }
+
+  @media (max-width: 580px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .stat-cell:first-child { border-radius: var(--r-lg) var(--r-lg) 0 0; }
+    .stat-cell:last-child  { border-radius: 0 0 var(--r-lg) var(--r-lg); }
+    .profile-top { flex-direction: column; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="fade-up" style="margin-bottom:2rem;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+    <div style="width:28px;height:1px;background:var(--gold);opacity:0.6;"></div>
+    <span style="font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);">Account Overview</span>
+  </div>
+  <h1 class="page-title">Account Details</h1>
+  <p class="page-subtitle">Your 8TechBank private banking profile</p>
+</div>
+
+<!-- PROFILE CARD -->
+<div class="profile-card fade-up delay-1">
+  <div class="profile-top">
+    <div class="profile-avatar-row">
+      <div class="profile-avatar">{{ username[0].upper() }}</div>
+      <div>
+        <div class="profile-name">{{ username }}</div>
+        <div class="profile-handle">ID #{{ "%06d"|format(id) }}</div>
+      </div>
+    </div>
+    <div class="profile-status">
+      <span class="status-dot"></span>
+      Active Account
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-cell">
+      <div class="stat-cell-label">Account ID</div>
+      <div class="stat-cell-value gold mono">{{ "%06d"|format(id) }}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-cell-label">Account Type</div>
+      <div class="stat-cell-value" style="font-size:1.05rem;color:var(--ink-05);">Checking</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-cell-label">Available Balance</div>
+      <div class="stat-cell-value green">${{ "%.2f"|format(balance) }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL CARD -->
+<div class="card fade-up delay-2" style="margin-top:1.25rem;">
+  <div class="section-heading">Account Information</div>
+  <div class="detail-row">
+    <span class="detail-key">Username</span>
+    <span class="detail-val">{{ username }}</span>
+  </div>
+  <div class="detail-row">
+    <span class="detail-key">Account ID</span>
+    <span class="detail-val">{{ "%06d"|format(id) }}</span>
+  </div>
+  <div class="detail-row">
+    <span class="detail-key">Current Balance</span>
+    <span class="detail-val" style="color:var(--success);font-weight:600;">${{ "%.2f"|format(balance) }}</span>
+  </div>
+  <div class="detail-row">
+    <span class="detail-key">Account Status</span>
+    <span class="detail-val"><span class="badge badge-green">Active</span></span>
+  </div>
+  <div class="detail-row">
+    <span class="detail-key">Account Type</span>
+    <span class="detail-val"><span class="badge badge-gold">Checking</span></span>
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="action-row fade-up delay-3">
+  <a href="/dashboard" class="btn btn-ghost">
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    Back to Dashboard
+  </a>
+  <a href="/transfer" class="btn btn-primary">
+    Transfer Funds
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+
+{% endblock %}

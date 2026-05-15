@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Vulnerable8TechBank{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ─── SUMMARY STRIP ─── */
+  .summary-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem; margin-bottom: 2rem;
+  }
+
+  .summary-cell {
+    background: var(--surface-1); border: 1px solid var(--border-1);
+    border-radius: var(--r-xl); padding: 1.5rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .summary-cell:hover { border-color: var(--border-gold); }
+
+  .summary-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-30); margin-bottom: 8px;
+  }
+  .summary-value {
+    font-family: var(--font-display);
+    font-size: 1.75rem; font-weight: 600;
+    letter-spacing: -0.03em; color: var(--ink-05);
+  }
+  .summary-value.green { color: var(--success); }
+  .summary-value.red   { color: var(--danger); }
+  .summary-value.gold  { color: var(--gold); }
+
+  /* ─── FILTER ROW ─── */
+  .filter-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem;
+  }
+  .filter-chip {
+    font-size: 12px; font-weight: 500; padding: 6px 14px;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--border-1); background: transparent;
+    color: var(--ink-30); cursor: pointer;
+    transition: all 0.18s; font-family: var(--font-body);
+  }
+  .filter-chip:hover, .filter-chip.active {
+    background: var(--gold-dim); color: var(--gold);
+    border-color: var(--border-gold);
+  }
+
+  /* ─── TRANSACTION LIST ─── */
+  .tx-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 0; border-bottom: 1px solid var(--border-0);
+    transition: background 0.15s;
+  }
+  .tx-item:last-child { border-bottom: none; }
+
+  .tx-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .tx-out { background: var(--danger-dim); }
+  .tx-in  { background: var(--success-dim); }
+
+  .tx-body { flex: 1; min-width: 0; }
+  .tx-party { font-size: 14px; font-weight: 500; color: var(--ink-05); margin-bottom: 3px; }
+  .tx-note {
+    font-size: 12px; color: var(--ink-40);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;
+  }
+
+  .tx-right { text-align: right; flex-shrink: 0; }
+  .tx-val {
+    font-family: var(--font-display);
+    font-size: 16px; font-weight: 600; letter-spacing: -0.02em;
+  }
+  .tx-val.out { color: var(--danger); }
+  .tx-val.in  { color: var(--success); }
+  .tx-date { font-size: 11px; color: var(--ink-40); margin-top: 3px; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state { text-align: center; padding: 4rem 2rem; }
+  .empty-state-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .empty-state-title {
+    font-family: var(--font-display); font-size: 1.15rem;
+    color: var(--ink-10); margin-bottom: 6px;
+  }
+  .empty-state-sub { font-size: 13px; color: var(--ink-40); margin-bottom: 1.5rem; }
+
+  @media (max-width: 600px) {
+    .summary-strip { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 400px) {
+    .summary-strip { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="fade-up" style="margin-bottom:2rem;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+    <div style="width:28px;height:1px;background:var(--gold);opacity:0.6;"></div>
+    <span style="font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);">Account Activity</span>
+  </div>
+  <h1 class="page-title">Transaction History</h1>
+  <p class="page-subtitle">All your account activity in one place</p>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary-strip fade-up delay-1">
+  <div class="summary-cell">
+    <div class="summary-label">Total Transactions</div>
+    <div class="summary-value gold">{{ transactions|length }}</div>
+  </div>
+  <div class="summary-cell">
+    <div class="summary-label">Total Sent</div>
+    <div class="summary-value red">
+      ${{ "%.2f"|format(transactions | selectattr('1', 'equalto', user_id) | sum(attribute='3') if transactions else 0) }}
+    </div>
+  </div>
+  <div class="summary-cell">
+    <div class="summary-label">Total Received</div>
+    <div class="summary-value green">${{ "%.2f"|format(0) }}</div>
+  </div>
+</div>
+
+<!-- FILTERS + LIST -->
+<div class="card fade-up delay-2">
+  <div class="filter-row">
+    <button class="filter-chip active" onclick="filterTx('all', this)">All</button>
+    <button class="filter-chip" onclick="filterTx('out', this)">Sent</button>
+    <button class="filter-chip" onclick="filterTx('in', this)">Received</button>
+  </div>
+
+  {% if transactions %}
+    <div id="txList">
+      {% for t in transactions %}
+        {% set is_out = (t[1] == user_id) %}
+        <div class="tx-item" data-dir="{{ 'out' if is_out else 'in' }}">
+          <div class="tx-avatar {{ 'tx-out' if is_out else 'tx-in' }}">
+            {{ '↗' if is_out else '↙' }}
+          </div>
+          <div class="tx-body">
+            <div class="tx-party">
+              {% if is_out %}Sent to Account #{{ t[2] }}{% else %}Received from Account #{{ t[1] }}{% endif %}
+            </div>
+            <!-- [VULN-3] Stored XSS: note rendered with | safe as in original -->
+            <div class="tx-note">{% if t[4] %}{{ t[4] | safe }}{% else %}<em style="color:var(--ink-50);">No note</em>{% endif %}</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-val {{ 'out' if is_out else 'in' }}">
+              {{ '−' if is_out else '+' }}${{ "%.2f"|format(t[3]) }}
+            </div>
+            <div class="tx-date">{{ t[5] if t[5] else '—' }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <div class="empty-state-icon">
+          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.3" style="color:var(--ink-40)"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+      </div>
+      <div class="empty-state-title">No transactions yet</div>
+      <p class="empty-state-sub">Your history will appear here once you make a transfer.</p>
+      <a href="/transfer" class="btn btn-primary">Make a Transfer 
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function filterTx(dir, btn) {
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tx-item').forEach(row => {
+      row.style.display = (dir === 'all' || row.dataset.dir === dir) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}
