@@ -613,16 +613,6 @@
   </div>
 
   <div class="nav-right">
-    <a href="https://8techbank-production.up.railway.app"
-      class="btn-nav"
-      title="Switch to Vulnerable App"
-      style="border-color:rgba(224,82,82,0.28);color:#e05252;background:rgba(224,82,82,0.08);font-size:11px;display:flex;align-items:center;gap:6px;">
-      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-      </svg>
-      Vulnerable App
-    </a>
-
 
     <!-- THEME TOGGLE -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
@@ -686,13 +676,7 @@
 
 {% block extra_scripts %}{% endblock %}
 
-<!--
-  FIX: toggleTheme() and its event listener are now in a nonced script block.
-  The inline onclick="toggleTheme()" attribute has been REMOVED from the button above
-  because event handler attributes are treated as separate inline scripts by the browser
-  and are blocked by CSP even when the function itself is in a nonced block.
-  Instead we wire the click via addEventListener here, which is covered by this nonce.
--->
+
 <script nonce="{{ csp_nonce }}">
   (function () {
     function toggleTheme() {
