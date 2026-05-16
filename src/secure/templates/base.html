@@ -62,7 +62,7 @@
       --border-2:    rgba(255,255,255,0.14);
       --border-gold: rgba(201,168,76,0.30);
 
-      --nav-bg: rgba(10,11,13,0.88);
+      --nav-bg:       rgba(10,11,13,0.92);
       --texture-line: rgba(255,255,255,0.015);
     }
 
@@ -105,7 +105,7 @@
       --amber:       #b07020;
       --amber-dim:   rgba(176,112,32,0.10);
 
-      --nav-bg: rgba(240,242,245,0.92);
+      --nav-bg:       rgba(240,242,245,0.94);
       --texture-line: rgba(0,0,0,0.03);
     }
 
@@ -147,11 +147,15 @@
       z-index: 9999;
     }
 
-    /* ─── NAV ─── */
-    nav {
+    /* ─── NAV WRAPPER (sticky context) ─── */
+    .nav-wrapper {
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 200;
+    }
+
+    /* ─── NAV BAR ─── */
+    nav {
       height: var(--nav-h);
       display: flex;
       align-items: center;
@@ -174,6 +178,7 @@
       font-weight: 600;
       color: var(--ink-05);
       letter-spacing: 0.02em;
+      flex-shrink: 0;
     }
 
     .nav-logo-mark {
@@ -256,10 +261,33 @@
       text-transform: uppercase;
       cursor: pointer;
       font-family: var(--font-body);
+      white-space: nowrap;
     }
     .btn-nav:hover { background: var(--gold); color: #000; border-color: var(--gold); }
 
-    /* ─── THEME TOGGLE BUTTON ─── */
+    /* Switch app button — danger-tinted */
+    .btn-nav-switch {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid rgba(224,82,82,0.28);
+      background: rgba(224,82,82,0.08);
+      color: var(--danger);
+      text-decoration: none;
+      transition: all 0.18s ease;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: var(--font-body);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-nav-switch:hover { background: rgba(224,82,82,0.18); color: #f07070; border-color: rgba(224,82,82,0.45); }
+
+    /* ─── THEME TOGGLE ─── */
     .theme-toggle {
       width: 36px;
       height: 36px;
@@ -279,12 +307,93 @@
       color: var(--gold);
       background: var(--gold-dim);
     }
-
     .theme-toggle .icon-moon { display: block; }
     .theme-toggle .icon-sun  { display: none;  }
-
     [data-theme="light"] .theme-toggle .icon-moon { display: none;  }
     [data-theme="light"] .theme-toggle .icon-sun  { display: block; }
+
+    /* ─── HAMBURGER BUTTON ─── */
+    .nav-hamburger {
+      display: none;
+      width: 36px;
+      height: 36px;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-2);
+      border: 1px solid var(--border-1);
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      color: var(--ink-20);
+      transition: border-color 0.18s, color 0.18s, background 0.18s;
+      flex-shrink: 0;
+    }
+    .nav-hamburger:hover {
+      border-color: var(--border-gold);
+      color: var(--gold);
+      background: var(--gold-dim);
+    }
+    .nav-hamburger .icon-close { display: none; }
+    .nav-hamburger.is-open .icon-menu  { display: none;  }
+    .nav-hamburger.is-open .icon-close { display: block; }
+
+    /* ─── MOBILE PANEL ─── */
+    /* Panel is a sibling of <nav> inside .nav-wrapper so it overlays
+       page content while still travelling with the sticky context. */
+    .nav-mobile-panel {
+      display: none;
+      flex-direction: column;
+      background: var(--nav-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border-1);
+      padding: 0.75rem 1.25rem 1.25rem;
+      gap: 2px;
+    }
+    .nav-mobile-panel.is-open { display: flex; }
+
+    .nav-mobile-panel .nav-link {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-mobile-divider {
+      height: 1px;
+      background: var(--border-1);
+      margin: 6px 0;
+    }
+
+    .nav-mobile-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--ink-10);
+    }
+
+    /* Switch link inside panel */
+    .nav-mobile-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--danger);
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      transition: background 0.18s;
+    }
+    .nav-mobile-switch:hover { background: rgba(224,82,82,0.08); }
+
+    /* Sign-out link inside panel */
+    .nav-mobile-signout {
+      color: var(--danger);
+    }
 
     /* ─── PAGE WRAPPER ─── */
     .page-wrap {
@@ -303,12 +412,7 @@
       padding: 2rem 2.25rem;
       transition: background 0.25s ease, border-color 0.25s ease;
     }
-
-    .card-sm {
-      padding: 1.4rem 1.6rem;
-      border-radius: var(--r-lg);
-    }
-
+    .card-sm { padding: 1.4rem 1.6rem; border-radius: var(--r-lg); }
     .card-gold {
       border-color: var(--border-gold);
       background: linear-gradient(135deg, var(--surface-2), var(--surface-1));
@@ -320,21 +424,18 @@
       color: var(--ink-05);
       letter-spacing: -0.01em;
     }
-
     .page-title {
       font-size: 3rem;
       font-weight: 600;
       line-height: 1.1;
       margin-bottom: 0.5rem;
     }
-
     .page-subtitle {
       font-size: 14px;
       color: var(--ink-30);
       margin-bottom: 2.5rem;
       font-weight: 400;
     }
-
     .section-heading {
       font-family: var(--font-display);
       font-size: 1.1rem;
@@ -343,7 +444,6 @@
       letter-spacing: 0.01em;
       margin-bottom: 1rem;
     }
-
     .mono { font-family: var(--font-mono); font-size: 0.88em; }
 
     /* ─── FORM ELEMENTS ─── */
@@ -377,16 +477,11 @@
       outline: none;
       appearance: none;
     }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
+    input:focus, textarea:focus, select:focus {
       border-color: var(--gold);
       box-shadow: 0 0 0 3px rgba(201,168,76,0.14);
     }
-
     input::placeholder, textarea::placeholder { color: var(--ink-40); }
-
     textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 
     /* ─── BUTTONS ─── */
@@ -407,7 +502,6 @@
       white-space: nowrap;
       letter-spacing: 0.02em;
     }
-
     .btn-primary {
       background: var(--gold);
       color: #000;
@@ -416,21 +510,18 @@
     }
     .btn-primary:hover { background: var(--gold-lt); border-color: var(--gold-lt); transform: translateY(-1px); }
     .btn-primary:active { transform: translateY(0); }
-
     .btn-ghost {
       background: transparent;
       color: var(--ink-10);
       border-color: var(--border-2);
     }
     .btn-ghost:hover { background: var(--surface-2); color: var(--ink-05); }
-
     .btn-danger {
       background: var(--danger-dim);
       color: var(--danger);
       border-color: rgba(224,82,82,0.22);
     }
     .btn-danger:hover { background: rgba(224,82,82,0.2); }
-
     .btn-full { width: 100%; }
 
     /* ─── ALERTS ─── */
@@ -531,11 +622,11 @@
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-up  { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .delay-1  { animation-delay: 0.07s; }
-    .delay-2  { animation-delay: 0.14s; }
-    .delay-3  { animation-delay: 0.21s; }
-    .delay-4  { animation-delay: 0.28s; }
+    .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .delay-1 { animation-delay: 0.07s; }
+    .delay-2 { animation-delay: 0.14s; }
+    .delay-3 { animation-delay: 0.21s; }
+    .delay-4 { animation-delay: 0.28s; }
 
     /* ─── FOOTER ─── */
     .site-footer {
@@ -547,11 +638,7 @@
       gap: 1rem;
       border-top: 1px solid var(--border-0);
     }
-    .footer-brand {
-      font-family: var(--font-display);
-      font-size: 15px;
-      color: var(--ink-40);
-    }
+    .footer-brand { font-family: var(--font-display); font-size: 15px; color: var(--ink-40); }
     .footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
     .footer-link {
       font-size: 12px; color: var(--ink-40);
@@ -560,15 +647,30 @@
     }
     .footer-link:hover { color: var(--gold); }
 
-    /* ─── RESPONSIVE ─── */
+    /* ─── RESPONSIVE: TABLET ─── */
+    @media (max-width: 900px) {
+      /* Hide switch button text, keep icon only to save space */
+      .btn-nav-switch .switch-label { display: none; }
+      .btn-nav-switch { padding: 7px 10px; }
+    }
+
+    /* ─── RESPONSIVE: MOBILE ─── */
     @media (max-width: 768px) {
       nav { padding: 0 1.25rem; }
-      .nav-center { display: none; }
+      .nav-center    { display: none; }
+      .nav-user-pill { display: none; }
+      /* Keep: theme-toggle, btn-nav (sign in/out), hamburger */
+      .nav-hamburger { display: flex; }
+      /* Hide desktop switch button — exposed in mobile panel */
+      .btn-nav-switch { display: none; }
       .page-wrap { padding: 2rem 1.25rem 4rem; }
       .page-title { font-size: 2.1rem; }
       .site-footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
     }
+
     @media (max-width: 480px) {
+      nav { padding: 0 1rem; }
+      .nav-logo span { display: none; } /* hide wordmark, keep logomark on tiny screens */
       .page-title { font-size: 1.75rem; }
       .card { padding: 1.5rem 1.25rem; }
     }
@@ -578,27 +680,113 @@
 </head>
 <body>
 
-
+<!-- Prevent FOUC: apply saved theme before first paint -->
 <script nonce="{{ csp_nonce }}">
   (function () {
     try {
-      var saved = localStorage.getItem('8tb-theme');
-      if (saved === 'light' || saved === 'dark') {
-        document.documentElement.setAttribute('data-theme', saved);
+      var t = localStorage.getItem('8tb-theme');
+      if (t === 'light' || t === 'dark') {
+        document.documentElement.setAttribute('data-theme', t);
       }
     } catch (e) {}
   })();
 </script>
 
-<!-- NAVIGATION -->
-<nav>
-  <a href="/" class="nav-logo">
-    <div class="nav-logo-mark">8T</div>
-    8TechBank
-  </a>
+<!-- ─── NAVIGATION WRAPPER ─── -->
+<!-- .nav-wrapper is sticky; the mobile panel is its sibling inside it
+     so the panel overlays page content while travelling with the nav. -->
+<div class="nav-wrapper">
 
-  <div class="nav-center">
+  <nav role="banner">
+    <!-- Logo -->
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-mark" aria-hidden="true">8T</div>
+      <span>8TechBank</span>
+    </a>
+
+    <!-- Desktop centre links -->
+    <div class="nav-center" role="navigation" aria-label="Main navigation">
+      {% if session.get('username') %}
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/transfer"  class="nav-link">Transfer</a>
+        <a href="/history"   class="nav-link">History</a>
+        <a href="/search"    class="nav-link">Search</a>
+        {% if session.get('is_admin') %}
+          <a href="/admin" class="nav-link">Admin</a>
+        {% endif %}
+      {% else %}
+        <a href="/login"    class="nav-link">Sign In</a>
+        <a href="/register" class="nav-link">Register</a>
+      {% endif %}
+    </div>
+
+    <!-- Desktop right controls -->
+    <div class="nav-right">
+
+      <!-- Switch to Vulnerable App -->
+      <a href="https://8techbank-production.up.railway.app"
+         class="btn-nav-switch"
+         title="Switch to Vulnerable App"
+         rel="noopener noreferrer"
+         aria-label="Switch to Vulnerable App">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+        <span class="switch-label">Vulnerable App</span>
+      </a>
+
+      <!-- Theme toggle -->
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <svg class="icon-moon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+        </svg>
+        <svg class="icon-sun" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+
+      <!-- User pill + auth button (desktop) -->
+      {% if session.get('username') %}
+        <div class="nav-user-pill" aria-label="Signed in as {{ session['username'] }}">
+          <div class="nav-avatar" aria-hidden="true">{{ session['username'][0] | upper }}</div>
+          <span style="font-size:12px;">{{ session['username'] }}</span>
+        </div>
+        <a href="/logout" class="btn-nav">Sign Out</a>
+      {% else %}
+        <a href="/login" class="btn-nav">Sign In</a>
+      {% endif %}
+
+      <!-- Hamburger: mobile only -->
+      <button
+        class="nav-hamburger"
+        id="navHamburger"
+        aria-label="Open navigation menu"
+        aria-expanded="false"
+        aria-controls="navMobilePanel"
+      >
+        <svg class="icon-menu" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg class="icon-close" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile panel — sibling of nav, child of sticky wrapper -->
+  <div class="nav-mobile-panel" id="navMobilePanel" role="dialog" aria-label="Navigation menu" aria-modal="false">
+
     {% if session.get('username') %}
+      <!-- User identity row -->
+      <div class="nav-mobile-user">
+        <div class="nav-avatar" aria-hidden="true">{{ session['username'][0] | upper }}</div>
+        <span>{{ session['username'] }}</span>
+      </div>
+      <div class="nav-mobile-divider"></div>
+
+      <!-- Nav links -->
       <a href="/dashboard" class="nav-link">Dashboard</a>
       <a href="/transfer"  class="nav-link">Transfer</a>
       <a href="/history"   class="nav-link">History</a>
@@ -606,52 +794,60 @@
       {% if session.get('is_admin') %}
         <a href="/admin" class="nav-link">Admin</a>
       {% endif %}
+
+      <div class="nav-mobile-divider"></div>
+
+      <!-- Switch app -->
+      <a href="https://8techbank-production.up.railway.app"
+         class="nav-mobile-switch"
+         rel="noopener noreferrer"
+         title="Switch to Vulnerable App">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+        Vulnerable App
+      </a>
+
+      <div class="nav-mobile-divider"></div>
+
+      <!-- Sign out -->
+      <a href="/logout" class="nav-link nav-mobile-signout">Sign Out</a>
+
     {% else %}
       <a href="/login"    class="nav-link">Sign In</a>
       <a href="/register" class="nav-link">Register</a>
+      <div class="nav-mobile-divider"></div>
+      <a href="https://8techbank-production.up.railway.app"
+         class="nav-mobile-switch"
+         rel="noopener noreferrer"
+         title="Switch to Vulnerable App">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+        Vulnerable App
+      </a>
     {% endif %}
+
   </div>
+</div>
+<!-- ─── END NAVIGATION WRAPPER ─── -->
 
-  <div class="nav-right">
-
-    <!-- THEME TOGGLE -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
-      <!-- Moon: shown in dark mode -->
-      <svg class="icon-moon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
-      </svg>
-      <!-- Sun: shown in light mode -->
-      <svg class="icon-sun" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="5"/>
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-      </svg>
-    </button>
-
-    {% if session.get('username') %}
-      <div class="nav-user-pill">
-        <div class="nav-avatar">{{ session['username'][0].upper() }}</div>
-        <span style="font-size:12px;">{{ session['username'] }}</span>
-      </div>
-      <a href="/logout" class="btn-nav">Sign Out</a>
-    {% else %}
-      <a href="/login" class="btn-nav">Sign In</a>
-    {% endif %}
-  </div>
-</nav>
 
 <!-- CONTENT -->
 <div class="page-wrap">
 
   {% if insecure_app %}
-    <div class="insecure-banner">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;margin-top:2px;color:#f07070"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    <div class="insecure-banner" role="alert">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;margin-top:2px;color:#f07070" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
       <span><strong>Insecure mode active.</strong> This application contains deliberate vulnerabilities for security testing. Never use real credentials.</span>
     </div>
   {% endif %}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <ul class="flashes">
+      <ul class="flashes" role="alert">
         {% for category, message in messages %}
           <li class="flash-item flash-{{ category }}">{{ message }}</li>
         {% endfor %}
@@ -663,8 +859,8 @@
 
   <footer class="site-footer">
     <div class="footer-brand">8TechBank &mdash; Secure Private Banking Interface</div>
-    <nav class="footer-links">
-      <a href="/"      class="footer-link">Home</a>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="/"       class="footer-link">Home</a>
       <a href="/search" class="footer-link">Search</a>
       {% if session.get('user_id') %}
         <a href="/account/{{ session['user_id'] }}" class="footer-link">My Account</a>
@@ -676,7 +872,7 @@
 
 {% block extra_scripts %}{% endblock %}
 
-
+<!-- Theme toggle — IIFE, nonce-protected, no inline handlers -->
 <script nonce="{{ csp_nonce }}">
   (function () {
     function toggleTheme() {
@@ -685,9 +881,50 @@
       document.documentElement.setAttribute('data-theme', next);
       try { localStorage.setItem('8tb-theme', next); } catch (e) {}
     }
-
     var btn = document.getElementById('themeToggle');
     if (btn) { btn.addEventListener('click', toggleTheme); }
+  })();
+</script>
+
+<!-- Hamburger menu — IIFE, nonce-protected -->
+<script nonce="{{ csp_nonce }}">
+  (function () {
+    var hamburger = document.getElementById('navHamburger');
+    var panel     = document.getElementById('navMobilePanel');
+    if (!hamburger || !panel) { return; }
+
+    function openMenu() {
+      panel.classList.add('is-open');
+      hamburger.classList.add('is-open');
+      hamburger.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+      panel.classList.remove('is-open');
+      hamburger.classList.remove('is-open');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    hamburger.addEventListener('click', function () {
+      panel.classList.contains('is-open') ? closeMenu() : openMenu();
+    });
+
+    /* Close on outside click */
+    document.addEventListener('click', function (e) {
+      if (!hamburger.contains(e.target) && !panel.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    /* Close on Escape */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { closeMenu(); }
+    });
+
+    /* Close when any panel link is followed */
+    panel.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', closeMenu);
+    });
   })();
 </script>
 
