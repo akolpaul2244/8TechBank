@@ -1,6 +1,12 @@
 # 8TechBank Security Assessment Report
 
-**Prepared by:** Group [Insert Group Number]  
+**Prepared by:** 
+1. AKOL PAUL 22/U/22453 2200722453
+2. AMPUMUZA AIJUKA 22/U/5766 220075766
+3. NTULUME WILSON 22/U/6739 220076739
+4. OCUNG ALLAN 22/U/22867 2200722867
+5. SSENTONGO HENRY ATANUS 22/U/3870/PS 220073870 
+
 **Assessment Date:** June 2026  
 **Application Version:** 8TechBank v1.0 (Vulnerable) / v2.0 (Secure)  
 **Classification:** Academic — BSE 4202 Software Security Practical Assignment  
