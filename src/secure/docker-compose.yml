@@ -1,20 +1,70 @@
 version: '3.8'
 
+# Three-tier architecture: nginx (web) → flask (app) → sqlite (data volume)
+# Each tier is on a separate network so components only talk to their neighbours.
+
 services:
+
+  # ── Web tier: nginx reverse proxy ──────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"        # Only nginx is exposed to the host; flask is not
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    networks:
+      - web_network    # nginx ↔ outside world
+      - app_network    # nginx ↔ flask
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          cpus:   '0.25'
+
+  # ── App tier: Flask application ────────────────────────────────────────────
   app:
     build: .
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"         # Only reachable from nginx, NOT from the host
     environment:
       - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-replace-this-secret-in-production}
+      - JWT_SECRET=${JWT_SECRET:-replace-this-jwt-secret-in-production}
+    volumes:
+      - db_data:/app/data   # persistent DB volume, separate from app code
+    networks:
+      - app_network    # flask ↔ nginx
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     read_only: true
     tmpfs:
       - /tmp
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - app_network
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus:   '0.50'
 
+# ── Volumes ────────────────────────────────────────────────────────────────
+volumes:
+  db_data:    # Persistent SQLite storage, survives container restarts
+
+# ── Networks ──────────────────────────────────────────────────────────────
 networks:
+  web_network:
+    driver: bridge
+    # Public-facing — nginx only
   app_network:
     driver: bridge
+    internal: true   # No direct internet access; only nginx can reach flask
